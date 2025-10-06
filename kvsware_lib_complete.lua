@@ -804,7 +804,7 @@ function library:Introduction()
     pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
     pageLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 
-    CreateTween("kvsRotation", 0)
+    CreateTween("xsxRotation", 0)
     local MinusAmount = -16
     coroutine.wrap(function()
         while wait() do
@@ -3576,3 +3576,4 @@ function library:Init(key)
     return TabLibrary
 end
 return library
+
