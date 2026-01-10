@@ -83,7 +83,8 @@ local Theme = {
 local function textLabel(parent, txt, size, bold)
     local l = Instance.new("TextLabel")
     l.BackgroundTransparency = 1
-    l.FontFace = Font.new("rbxasset://fonts/SourceSansPro-Regular.ttf", Enum.FontWeight.Regular, bold and Enum.FontStyle.Bold or Enum.FontStyle.Normal)
+    local weight = bold and Enum.FontWeight.Bold or Enum.FontWeight.Regular
+    l.FontFace = Font.new("rbxasset://fonts/SourceSansPro-Regular.ttf", weight, Enum.FontStyle.Normal)
     l.Text = txt or ""
     l.TextColor3 = Theme.Text
     l.TextSize = size or 16
