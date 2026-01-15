@@ -2003,7 +2003,7 @@
 						last_pos = current_pos
 						
 						cfg.rotation += delta.X * 0.5
-						cfg.pitch -= delta.Y * 0.5
+						cfg.pitch += delta.Y * 0.5
 						cfg.pitch = math.clamp(cfg.pitch, -80, 80)
 					end
 				end)
@@ -2015,7 +2015,7 @@
 				end)
 
 				library:connection(run.RenderStepped, function()
-					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
+					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, -1, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
 				end)
 			end 
 
