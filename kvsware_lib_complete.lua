@@ -107,12 +107,12 @@
 		preset = {
 			["outline"] = hex("#0A0A0A"), -- 
 			["inline"] = hex("#2D2D2D"), --
-			["accent"] = hex("#6078BE"), --
+			["accent"] = hex("#B4B4B4"), --
 			["high_contrast"] = hex("#141414"),
 			["low_contrast"] = hex("#1E1E1E"),
 			["text"] = hex("#B4B4B4"),
 			["text_outline"] = rgb(0, 0, 0),
-			["glow"] = hex("#6078BE"), 
+			["glow"] = hex("#B4B4B4"), 
 		},
 
 		utility = {
@@ -1550,6 +1550,7 @@
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(255, 255, 255)
 				})
+				window["tab_holder"].Visible = false
 
 				library:create("UIListLayout", {
 					Parent = window["tab_holder"],
@@ -1563,9 +1564,9 @@
 					Parent = items.holder,
 					Name = " ",
 					BackgroundTransparency = 1,
-					Position = dim2(0, -1, 0, 19),
+					Position = dim2(0, -1, 0, 0),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, 0, 1, -22),
+					Size = dim2(1, 0, 1, 0),
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(255, 255, 255)
 				})
@@ -1631,7 +1632,8 @@
 			-- settings tab (style and configurations)
 				local tab_context = setmetatable({tab_holder = window["tab_holder"]}, library)
 				local settings_tab = tab_context:tab({name = "Settings"})
-				local column = settings_tab:column()
+				local left = settings_tab:column()
+				local right = settings_tab:column()
 
 				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})
 
@@ -1642,7 +1644,7 @@
 				end)
 
 				do
-					local section = column:section({name = "Theme"})
+					local section = left:section({name = "Theme"})
 					section:label({name = "Accent"})
 					:colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
 						library:update_theme("accent", color)
@@ -1691,7 +1693,7 @@
 						end
 					end})
 
-					local other = column:section({name = "Other"})
+					local other = left:section({name = "Other"})
 					other:label({name = "UI Bind"})
 					:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
 					other:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
@@ -1733,7 +1735,7 @@
 						library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
 					end 
 
-					local section = column:section({name = "Configs"})
+					local section = right:section({name = "Configs"})
 					config_holder = section:list({flag = "config_name_list"})
 					section:textbox({flag = "config_name_text_box"})
 					section:button_holder({})
@@ -2626,9 +2628,9 @@
 				local slider = library:create("TextButton", {
 					Parent = bottom_components,
 					Name = "slider",
-					Position = dim2(0, 0, 0, 2),
+					Position = dim2(0, 20, 0, 2),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -1, 1, 12),
+					Size = dim2(1, -40, 1, 12),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.outline,
 					Text = "",
@@ -2720,13 +2722,23 @@
 					}
 				})
 
-				local minus_button = library:create("TextButton", {
-					Parent = slider,
-					Name = "minus",
-					AnchorPoint = vec2(0, 0.5),
-					Position = dim2(0, 1, 0.5, 0),
+				local controls = library:create("Frame", {
+					Parent = slider_REAL,
+					Name = "controls",
+					BackgroundTransparency = 1,
+					Position = dim2(0, 0, 0, cfg.name and 15 or 0),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(0, 16, 1, -4),
+					Size = dim2(1, 0, 0, 16),
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				local minus_button = library:create("TextButton", {
+					Parent = controls,
+					Name = "minus",
+					AnchorPoint = vec2(0, 0),
+					Position = dim2(0, 0, 0, 2),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(0, 16, 0, 12),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.inline,
 					Text = "-",
@@ -2734,16 +2746,15 @@
 					ZIndex = 3,
 					FontFace = library.font,
 					TextColor3 = themes.preset.text,
-					TextSize = 12,
+					TextSize = 12
 				}) library:apply_theme(minus_button, "inline", "BackgroundColor3")
-
 				local plus_button = library:create("TextButton", {
-					Parent = slider,
+					Parent = controls,
 					Name = "plus",
-					AnchorPoint = vec2(1, 0.5),
-					Position = dim2(1, -1, 0.5, 0),
+					AnchorPoint = vec2(1, 0),
+					Position = dim2(1, -16, 0, 2),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(0, 16, 1, -4),
+					Size = dim2(0, 16, 0, 12),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.inline,
 					Text = "+",
@@ -2751,7 +2762,7 @@
 					ZIndex = 3,
 					FontFace = library.font,
 					TextColor3 = themes.preset.text,
-					TextSize = 12,
+					TextSize = 12
 				}) library:apply_theme(plus_button, "inline", "BackgroundColor3")
 				
 				library:create("UIListLayout", {
