@@ -1965,9 +1965,31 @@
 
 				items.camera.CameraSubject = character
 
+				local is_dragging = false
+				local last_x = 0
+
+				library:connection(items.viewportframe.InputBegan, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						is_dragging = true
+						last_x = input.Position.X
+					end
+				end)
+
+				library:connection(uis.InputChanged, function(input)
+					if is_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+						local delta = input.Position.X - last_x
+						last_x = input.Position.X
+						cfg.rotation += delta * 0.5
+					end
+				end)
+
+				library:connection(uis.InputEnded, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						is_dragging = false
+					end
+				end)
+
 				library:connection(run.RenderStepped, function()
-					task.wait()
-					cfg.rotation += 0.5
 					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
 				end)
 			end 
@@ -5928,5 +5950,3 @@
 -- 
 
 return library, themes; 
-
-
