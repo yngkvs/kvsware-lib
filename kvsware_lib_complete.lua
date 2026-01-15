@@ -343,12 +343,13 @@
 			end)
 		end
 
-		function library:draggify(frame)
+		function library:draggify(frame, click_frame)
 			local dragging = false 
 			local start_size = frame.Position
 			local start 
+			local input_obj = click_frame or frame
 
-			frame.InputBegan:Connect(function(input)
+			input_obj.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					dragging = true
 					start = input.Position
@@ -367,7 +368,7 @@
 				end
 			end)
 
-			frame.InputEnded:Connect(function(input)
+			input_obj.InputEnded:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					dragging = false
 				end
@@ -678,7 +679,16 @@
 						BorderSizePixel = 0,
 						BackgroundColor3 = themes.preset.outline
 					})
-					library:draggify(items.main_holder)
+
+					items.drag_header = library:create("Frame", {
+						Parent = items.main_holder,
+						Name = "\0",
+						Size = dim2(1, 0, 0, 20),
+						BackgroundTransparency = 1,
+						ZIndex = 100
+					})
+
+					library:draggify(items.main_holder, items.drag_header)
 					library:make_resizable(items.main_holder)
 
 					local Close = library:create( "TextButton" , {
@@ -1946,9 +1956,10 @@
 					Size = dim2(1, 0, 0, 220);
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
-					Position = dim2(0, 0, 0, 10);
+					Position = dim2(0, 0, 0, 30);
 					BorderSizePixel = 0;
-					BackgroundColor3 = rgb(255, 255, 255)
+					BackgroundColor3 = rgb(255, 255, 255);
+					Active = true;
 				});
 				
 				items.camera = library:create( "Camera" , {
@@ -1965,21 +1976,35 @@
 
 				items.camera.CameraSubject = character
 
+				cfg.pitch = 0
+				cfg.distance = -6
+
 				local is_dragging = false
-				local last_x = 0
+				local last_pos = Vector2.new(0, 0)
 
 				library:connection(items.viewportframe.InputBegan, function(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
 						is_dragging = true
-						last_x = input.Position.X
+						last_pos = Vector2.new(input.Position.X, input.Position.Y)
+					end
+				end)
+
+				library:connection(items.viewportframe.InputChanged, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseWheel then
+						local delta = input.Position.Z
+						cfg.distance = math.clamp(cfg.distance + (delta > 0 and 1 or -1), -15, -2)
 					end
 				end)
 
 				library:connection(uis.InputChanged, function(input)
 					if is_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-						local delta = input.Position.X - last_x
-						last_x = input.Position.X
-						cfg.rotation += delta * 0.5
+						local current_pos = Vector2.new(input.Position.X, input.Position.Y)
+						local delta = current_pos - last_pos
+						last_pos = current_pos
+						
+						cfg.rotation += delta.X * 0.5
+						cfg.pitch -= delta.Y * 0.5
+						cfg.pitch = math.clamp(cfg.pitch, -80, 80)
 					end
 				end)
 
@@ -1990,7 +2015,7 @@
 				end)
 
 				library:connection(run.RenderStepped, function()
-					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
+					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
 				end)
 			end 
 
