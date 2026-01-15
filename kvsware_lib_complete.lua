@@ -1953,7 +1953,7 @@
 				items.viewportframe = library:create( "ViewportFrame" , {
 					Parent = self.holder;
 					BackgroundTransparency = 1;
-					Size = dim2(1, 0, 0, 220);
+					Size = dim2(1, 0, 0, 250);
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
 					Position = dim2(0, 0, 0, 30);
@@ -1977,7 +1977,7 @@
 				items.camera.CameraSubject = character
 
 				cfg.pitch = 0
-				cfg.distance = -6
+				cfg.distance = -4
 
 				local is_dragging = false
 				local last_pos = Vector2.new(0, 0)
@@ -2003,7 +2003,7 @@
 						last_pos = current_pos
 						
 						cfg.rotation += delta.X * 0.5
-						cfg.pitch += delta.Y * 0.5
+						cfg.pitch -= delta.Y * 0.5
 						cfg.pitch = math.clamp(cfg.pitch, -80, 80)
 					end
 				end)
@@ -2015,7 +2015,7 @@
 				end)
 
 				library:connection(run.RenderStepped, function()
-					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, -1, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
+					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, -0.5, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
 				end)
 			end 
 
@@ -2322,6 +2322,63 @@
 				--  
 			end 
 
+			local function make_draggable(obj)
+				local dragging = false
+				local start_pos, start_abs_pos
+				
+				library:connection(obj.InputBegan, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						dragging = true
+						start_pos = input.Position
+						start_abs_pos = obj.Position
+					end
+				end)
+				
+				library:connection(uis.InputChanged, function(input)
+					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+						local delta = input.Position - start_pos
+						obj.Position = UDim2.new(start_abs_pos.X.Scale, start_abs_pos.X.Offset + delta.X, start_abs_pos.Y.Scale, start_abs_pos.Y.Offset + delta.Y)
+					end
+				end)
+				
+				library:connection(uis.InputEnded, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
+						dragging = false
+						
+						local holder = objects["holder"]
+						local h_pos = holder.AbsolutePosition
+						local h_size = holder.AbsoluteSize
+						local center = obj.AbsolutePosition + (obj.AbsoluteSize * 0.5)
+						
+						local targets = {
+							{pos = h_pos + Vector2.new(h_size.X * 0.5, 0), udim = UDim2.new(0.5, 0, 0, -5), anchor = Vector2.new(0.5, 1)}, -- Top
+							{pos = h_pos + Vector2.new(h_size.X * 0.5, h_size.Y), udim = UDim2.new(0.5, 0, 1, 5), anchor = Vector2.new(0.5, 0)}, -- Bottom
+							{pos = h_pos + Vector2.new(0, h_size.Y * 0.5), udim = UDim2.new(0, -5, 0.5, 0), anchor = Vector2.new(1, 0.5)}, -- Left
+							{pos = h_pos + Vector2.new(h_size.X, h_size.Y * 0.5), udim = UDim2.new(1, 5, 0.5, 0), anchor = Vector2.new(0, 0.5)} -- Right
+						}
+						
+						local closest, dist = nil, math.huge
+						
+						for _, t in ipairs(targets) do
+							local d = (center - t.pos).Magnitude
+							if d < dist then
+								dist = d
+								closest = t
+							end
+						end
+						
+						if closest and dist < 50 then
+							obj.Position = closest.udim
+							obj.AnchorPoint = closest.anchor
+						end
+					end
+				end)
+			end
+			
+			make_draggable(objects["name"])
+			make_draggable(objects["distance"])
+			make_draggable(objects["weapon"])
+
 			cfg.change_health = function()
 				if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
 					return 
@@ -2388,6 +2445,22 @@
 					task.wait()
 					cfg.change_health()
 				end 
+			end)
+			
+			task.spawn(function()
+				while true do
+					task.wait(60)
+					if not items.viewportframe or not items.viewportframe.Parent then break end
+					
+					local new_char = lp.Character:Clone()
+					new_char.Animate:Destroy()
+					new_char.Parent = items.viewportframe
+					
+					local old_char = character
+					character = new_char
+					items.camera.CameraSubject = character
+					old_char:Destroy()
+				end
 			end)
 
 			return setmetatable(cfg, library)
@@ -5975,4 +6048,3 @@
 -- 
 
 return library, themes; 
-
