@@ -343,32 +343,35 @@
 			end)
 		end
 
-		function library:draggify(frame, click_frame)
+		function library:draggify(frame)
 			local dragging = false 
 			local start_size = frame.Position
 			local start 
-			local input_obj = click_frame or frame
 
-			input_obj.InputBegan:Connect(function(input)
+			frame.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					dragging = true
-					start = input.Position
-					start_size = frame.Position
+					-- Restrict dragging to the top 30 pixels (header area)
+					local relative_y = input.Position.Y - frame.AbsolutePosition.Y
+					if relative_y >= 0 and relative_y <= 30 then
+						dragging = true
+						start = input.Position
+						start_size = frame.Position
 
-					if library.current_element_open then 
-						library.current_element_open.set_visible(false)
-						library.current_element_open.open = false 
-						library.current_element_open = nil 
-					end 
+						if library.current_element_open then 
+							library.current_element_open.set_visible(false)
+							library.current_element_open.open = false 
+							library.current_element_open = nil 
+						end 
 
-					if frame.Parent:IsA("ScreenGui") and frame.Parent.DisplayOrder ~= 999999 then 
-						library.display_orders += 1 -- shit code
-						frame.Parent.DisplayOrder = library.display_orders
-					end   
+						if frame.Parent:IsA("ScreenGui") and frame.Parent.DisplayOrder ~= 999999 then 
+							library.display_orders += 1 -- shit code
+							frame.Parent.DisplayOrder = library.display_orders
+						end
+					end
 				end
 			end)
 
-			input_obj.InputEnded:Connect(function(input)
+			frame.InputEnded:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					dragging = false
 				end
@@ -679,16 +682,7 @@
 						BorderSizePixel = 0,
 						BackgroundColor3 = themes.preset.outline
 					})
-
-					items.drag_header = library:create("Frame", {
-						Parent = items.main_holder,
-						Name = "\0",
-						Size = dim2(1, 0, 0, 20),
-						BackgroundTransparency = 1,
-						ZIndex = 100
-					})
-
-					library:draggify(items.main_holder, items.drag_header)
+					library:draggify(items.main_holder)
 					library:make_resizable(items.main_holder)
 
 					local Close = library:create( "TextButton" , {
@@ -1953,13 +1947,12 @@
 				items.viewportframe = library:create( "ViewportFrame" , {
 					Parent = self.holder;
 					BackgroundTransparency = 1;
-					Size = dim2(1, 0, 0, 450);
+					Size = dim2(1, 0, 0, 220);
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
-					Position = dim2(0, 0, 0, 30);
+					Position = dim2(0, 0, 0, 10);
 					BorderSizePixel = 0;
-					BackgroundColor3 = rgb(255, 255, 255);
-					Active = true;
+					BackgroundColor3 = rgb(255, 255, 255)
 				});
 				
 				items.camera = library:create( "Camera" , {
@@ -1976,72 +1969,39 @@
 
 				items.camera.CameraSubject = character
 
-				cfg.pitch = 0
-				cfg.distance = -10
-
-				local is_dragging = false
-				local last_pos = Vector2.new(0, 0)
-
-				library:connection(items.viewportframe.InputBegan, function(input)
+				local dragging = false
+				local last_x = 0
+				
+				items.viewportframe.InputBegan:Connect(function(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
-						is_dragging = true
-						last_pos = Vector2.new(input.Position.X, input.Position.Y)
+						dragging = true
+						last_x = input.Position.X
 					end
 				end)
 
-				library:connection(items.viewportframe.InputChanged, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseWheel then
-						local delta = input.Position.Z
-						cfg.distance = math.clamp(cfg.distance + (delta > 0 and 1 or -1), -15, -2)
+				items.viewportframe.InputEnded:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						dragging = false
+						cfg.rotation = 0
+						character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
 					end
 				end)
 
 				library:connection(uis.InputChanged, function(input)
-					if is_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-						local current_pos = Vector2.new(input.Position.X, input.Position.Y)
-						local delta = current_pos - last_pos
-						last_pos = current_pos
-						
-						cfg.rotation += delta.X * 0.5
-						cfg.pitch -= delta.Y * 0.5
-						cfg.pitch = math.clamp(cfg.pitch, -80, 80)
-					end
-				end)
-
-				library:connection(uis.InputEnded, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 then
-						is_dragging = false
+					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+						local delta = input.Position.X - last_x
+						last_x = input.Position.X
+						cfg.rotation = cfg.rotation + delta * 0.5
+						character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
 					end
 				end)
 
 				library:connection(run.RenderStepped, function()
-					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, -0.5, cfg.distance)) * angle(math.rad(cfg.pitch), math.rad(cfg.rotation), 0))
+					task.wait()
 					
-					local cf, size = character:GetBoundingBox()
-					local corners = {
-						cf * CFrame.new(size.X/2, size.Y/2, size.Z/2),
-						cf * CFrame.new(size.X/2, size.Y/2, -size.Z/2),
-						cf * CFrame.new(size.X/2, -size.Y/2, size.Z/2),
-						cf * CFrame.new(size.X/2, -size.Y/2, -size.Z/2),
-						cf * CFrame.new(-size.X/2, size.Y/2, size.Z/2),
-						cf * CFrame.new(-size.X/2, size.Y/2, -size.Z/2),
-						cf * CFrame.new(-size.X/2, -size.Y/2, size.Z/2),
-						cf * CFrame.new(-size.X/2, -size.Y/2, -size.Z/2),
-					}
-					
-					local min_x, min_y, max_x, max_y = math.huge, math.huge, -math.huge, -math.huge
-					
-					for _, corner in ipairs(corners) do
-						local vector, on_screen = items.camera:WorldToViewportPoint(corner)
-						min_x = math.min(min_x, vector.X)
-						min_y = math.min(min_y, vector.Y)
-						max_x = math.max(max_x, vector.X)
-						max_y = math.max(max_y, vector.Y)
-					end
-					
-					if objects["holder"] then
-						objects["holder"].Size = UDim2.new(0, max_x - min_x, 0, max_y - min_y)
-						objects["holder"].Position = UDim2.new(0, min_x, 0, min_y)
+					if character.PrimaryPart and cfg.objects["holder"] then
+						local pos = items.camera:WorldToViewportPoint(character.PrimaryPart.Position)
+						cfg.objects["holder"].Position = dim2(0, pos.X, 0, pos.Y)
 					end
 				end)
 			end 
@@ -2051,49 +2011,13 @@
 					Parent = items.viewportframe;
 					Name = "\0";
 					BackgroundTransparency = 1;
-					Position = dim2(0, 0, 0, 0);
+					Position = dim2(0.5, 0, 0.5, 10);
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(0, 135, 0, 190);
 					BorderSizePixel = 0;
-					AnchorPoint = vec2(0, 0);
+					AnchorPoint = vec2(0.5, 0.5);
 					BackgroundColor3 = rgb(255, 255, 255)
 				});
-
-				local slots = {}
-				local slot_configs = {
-					top = { pos = UDim2.new(0.5, 0, 0, -5), anchor = Vector2.new(0.5, 1), list = true, direction = Enum.VerticalAlignment.Bottom },
-					bottom = { pos = UDim2.new(0.5, 0, 1, 5), anchor = Vector2.new(0.5, 0), list = true, direction = Enum.VerticalAlignment.Top },
-					left = { pos = UDim2.new(0, -5, 0.5, 0), anchor = Vector2.new(1, 0.5) },
-					right = { pos = UDim2.new(1, 5, 0.5, 0), anchor = Vector2.new(0, 0.5) },
-					top_left = { pos = UDim2.new(0, -5, 0, -5), anchor = Vector2.new(1, 1) },
-					top_right = { pos = UDim2.new(1, 5, 0, -5), anchor = Vector2.new(0, 1) },
-					bottom_left = { pos = UDim2.new(0, -5, 1, 5), anchor = Vector2.new(1, 0) },
-					bottom_right = { pos = UDim2.new(1, 5, 1, 5), anchor = Vector2.new(0, 0) },
-				}
-
-				for name, config in pairs(slot_configs) do
-					local slot = library:create("Frame", {
-						Parent = objects["holder"],
-						Name = name,
-						BackgroundTransparency = 1,
-						Size = UDim2.new(0, 0, 0, 0),
-						Position = config.pos,
-						AnchorPoint = config.anchor,
-						AutomaticSize = Enum.AutomaticSize.XY,
-					})
-					
-					if config.list then
-						library:create("UIListLayout", {
-							Parent = slot,
-							SortOrder = Enum.SortOrder.LayoutOrder,
-							HorizontalAlignment = Enum.HorizontalAlignment.Center,
-							VerticalAlignment = config.direction,
-							Padding = UDim.new(0, 2)
-						})
-					end
-					
-					slots[name] = slot
-				end
 				
 				objects[ "box_outline" ] = library:create( "UIStroke" , {
 					Parent = library.cache;
@@ -2385,99 +2309,8 @@
 				--  
 			end 
 
-			local function make_draggable(obj)
-				local dragging = false
-				local start_pos, start_abs_pos
-				
-				library:connection(obj.InputBegan, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 then
-						dragging = true
-						start_pos = input.Position
-						start_abs_pos = obj.Position
-						
-						-- Detach from slot to allow smooth dragging
-						if obj.Parent ~= objects["holder"] and obj.Parent ~= library.cache then
-							local abs_pos = obj.AbsolutePosition
-							local holder_abs = objects["holder"].AbsolutePosition
-							obj.Parent = objects["holder"]
-							obj.Position = UDim2.new(0, abs_pos.X - holder_abs.X, 0, abs_pos.Y - holder_abs.Y)
-							start_abs_pos = obj.Position
-						end
-					end
-				end)
-				
-				library:connection(uis.InputChanged, function(input)
-					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-						local delta = input.Position - start_pos
-						obj.Position = UDim2.new(start_abs_pos.X.Scale, start_abs_pos.X.Offset + delta.X, start_abs_pos.Y.Scale, start_abs_pos.Y.Offset + delta.Y)
-					end
-				end)
-				
-				library:connection(uis.InputEnded, function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
-						dragging = false
-						
-						local holder = objects["holder"]
-						local center = obj.AbsolutePosition + (obj.AbsoluteSize * 0.5)
-						
-						local closest_slot, min_dist = nil, math.huge
-						local slots_map = { "top", "bottom", "left", "right", "top_left", "top_right", "bottom_left", "bottom_right" }
-						
-						for _, name in ipairs(slots_map) do
-							local slot = holder:FindFirstChild(name)
-							if slot then
-								local dist = (center - slot.AbsolutePosition).Magnitude
-								if dist < min_dist then
-									min_dist = dist
-									closest_slot = slot
-								end
-							end
-						end
-						
-						if closest_slot and min_dist < 100 then
-							local is_list = closest_slot:FindFirstChild("UIListLayout")
-							
-							if is_list then
-								obj.Parent = closest_slot
-							else
-								local occupant = nil
-								for _, child in ipairs(closest_slot:GetChildren()) do
-									if child:IsA("Frame") or child:IsA("TextLabel") then
-										occupant = child
-										break
-									end
-								end
-								
-								if occupant and occupant ~= obj then
-									occupant.Parent = holder
-									occupant.Position = UDim2.new(0, closest_slot.AbsolutePosition.X - holder.AbsolutePosition.X + 20, 0, closest_slot.AbsolutePosition.Y - holder.AbsolutePosition.Y)
-								end
-								obj.Parent = closest_slot
-							end
-							
-							obj.Position = UDim2.new(0, 0, 0, 0)
-							obj.AnchorPoint = Vector2.new(0, 0)
-							
-							if obj == objects["healthbar_holder"] then
-								local parent_name = obj.Parent.Name
-								if parent_name == "top" or parent_name == "bottom" then
-									obj.Size = UDim2.new(1, 0, 0, 4)
-								else
-									obj.Size = UDim2.new(0, 4, 1, 0)
-								end
-							end
-						end
-					end
-				end)
-			end
-			
-			make_draggable(objects["name"])
-			make_draggable(objects["distance"])
-			make_draggable(objects["weapon"])
-			make_draggable(objects["healthbar_holder"])
-
 			cfg.change_health = function()
-				if not flags["Healthbar"] or objects["healthbar_holder"].Parent == library.cache then 
+				if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
 					return 
 				end
 
@@ -2486,20 +2319,10 @@
 				local multiplier = humanoid.MaxHealth * math.abs(math.sin(tick() * 2)) / humanoid.MaxHealth
 				local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
 				
-				-- Healthbar orientation support
-				local holder_size = objects["healthbar_holder"].AbsoluteSize
-				local is_horizontal = holder_size.X > holder_size.Y
-				
-				if is_horizontal then
-					objects[ "healthbar" ].Size = UDim2.new(multiplier, -2, 1, -2)
-					objects[ "healthbar" ].Position = UDim2.new(0, 1, 0, 1)
-				else
-					objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
-					objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
-				end
-				
+				objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
+				objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
 				objects[ "healthbar" ].BackgroundColor3 = color
-			end 
+			end -- wtf why diff func defining
 
 			function cfg.refresh_elements( )                                
 				objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
@@ -2515,25 +2338,10 @@
 				}
 
 				for flag,object in temp do 
-					local obj = (type(object) == "table" and object[1]) or object
-					
 					if type(object) == "table" then 
-						obj.TextColor3 = flags[flag].Color
+						object[1].TextColor3 = flags[flag].Color
 					else 
-						if flags[flag] then
-							obj.Visible = true
-							if obj.Parent == library.cache then
-								local holder = objects["holder"]
-								if flag == "Names" then obj.Parent = holder:FindFirstChild("top") end
-								if flag == "Distance" then obj.Parent = holder:FindFirstChild("bottom") end
-								if flag == "Weapon" then obj.Parent = holder:FindFirstChild("bottom") end
-								if flag == "Healthbar" then obj.Parent = holder:FindFirstChild("left") end
-								obj.Position = UDim2.new(0, 0, 0, 0)
-							end
-						else
-							obj.Parent = library.cache
-							obj.Visible = false
-						end
+						object.Parent = flags[flag] and objects[ "holder" ] or library.cache
 					end
 				end 
 				
@@ -2567,22 +2375,6 @@
 					task.wait()
 					cfg.change_health()
 				end 
-			end)
-			
-			task.spawn(function()
-				while true do
-					task.wait(60)
-					if not items.viewportframe or not items.viewportframe.Parent then break end
-					
-					local new_char = lp.Character:Clone()
-					new_char.Animate:Destroy()
-					new_char.Parent = items.viewportframe
-					
-					local old_char = character
-					character = new_char
-					items.camera.CameraSubject = character
-					old_char:Destroy()
-				end
 			end)
 
 			return setmetatable(cfg, library)
