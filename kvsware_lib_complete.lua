@@ -107,12 +107,12 @@
 		preset = {
 			["outline"] = hex("#0A0A0A"), -- 
 			["inline"] = hex("#2D2D2D"), --
-			["accent"] = hex("#B4B4B4"), --
+			["accent"] = hex("#6078BE"), --
 			["high_contrast"] = hex("#141414"),
 			["low_contrast"] = hex("#1E1E1E"),
 			["text"] = hex("#B4B4B4"),
 			["text_outline"] = rgb(0, 0, 0),
-			["glow"] = hex("#B4B4B4"), 
+			["glow"] = hex("#6078BE"), 
 		},
 
 		utility = {
@@ -350,24 +350,20 @@
 
 			frame.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					-- Restrict dragging to the top 30 pixels (header area)
-					local relative_y = input.Position.Y - frame.AbsolutePosition.Y
-					if relative_y >= 0 and relative_y <= 30 then
-						dragging = true
-						start = input.Position
-						start_size = frame.Position
+					dragging = true
+					start = input.Position
+					start_size = frame.Position
 
-						if library.current_element_open then 
-							library.current_element_open.set_visible(false)
-							library.current_element_open.open = false 
-							library.current_element_open = nil 
-						end 
+					if library.current_element_open then 
+						library.current_element_open.set_visible(false)
+						library.current_element_open.open = false 
+						library.current_element_open = nil 
+					end 
 
-						if frame.Parent:IsA("ScreenGui") and frame.Parent.DisplayOrder ~= 999999 then 
-							library.display_orders += 1 -- shit code
-							frame.Parent.DisplayOrder = library.display_orders
-						end
-					end
+					if frame.Parent:IsA("ScreenGui") and frame.Parent.DisplayOrder ~= 999999 then 
+						library.display_orders += 1 -- shit code
+						frame.Parent.DisplayOrder = library.display_orders
+					end   
 				end
 			end)
 
@@ -853,82 +849,9 @@
 					}) library:apply_theme(items.glow, "glow", "ImageColor3") 
 				-- 
 				
-				-- Button
-					items.button = library:create("TextButton", {
-						Parent = library.dock_holder,
-						Name = "",
-						TextColor3 = rgb(0, 0, 0),
-						BorderColor3 = rgb(0, 0, 0),
-						Text = "",
-						Size = dim2(0, 25, 0, 25),
-						BorderSizePixel = 0,
-						TextSize = 14,
-						BackgroundColor3 = themes.preset.inline
-					})
-					
-					local button_inline = library:create("Frame", {
-						Parent = items.button,
-						Name = "",
-						Position = dim2(0, 1, 0, 1),
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, -2, 1, -2),
-						BorderSizePixel = 0,
-						BackgroundColor3 = themes.preset.outline
-					}) library:apply_theme(button_inline, "outline", "BackgroundColor3") 
-					
-					local button_inline = library:create("Frame", {
-						Parent = button_inline,
-						Name = "",
-						Position = dim2(0, 1, 0, 1),
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, -2, 1, -2),
-						BorderSizePixel = 0,
-						BackgroundColor3 = rgb(255, 255, 255)
-					}) library:apply_theme(button_inline, "inline", "BackgroundColor3")
-					
-					local UIGradient = library:create("UIGradient", {
-						Parent = button_inline,
-						Name = "",
-						Rotation = 90,
-						Color = rgbseq{
-							rgbkey(0, rgb(35, 35, 47)),
-							rgbkey(1, rgb(41, 41, 55))
-						}
-					}) library:apply_theme(UIGradient, "contrast", "Color") 
-					
-					items.Icon = library:create("ImageLabel", {
-						Parent = button_inline,
-						Name = "",
-						ImageColor3 = themes.preset.accent,
-						Image = cfg.image,
-						BackgroundTransparency = 1,
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, 0, 1, 0),
-						BorderSizePixel = 0,
-						BackgroundColor3 = rgb(255, 255, 255)
-					}) library:apply_theme(items.Icon, "accent", "ImageColor3") library:apply_theme(items.Icon, "inline", "ImageColor3") 
-					
-					local UIPadding = library:create("UIPadding", {
-						Parent = button_inline,
-						Name = "",
-						PaddingTop = dim(0, 4),
-						PaddingBottom = dim(0, 4),
-						PaddingRight = dim(0, 4),
-						PaddingLeft = dim(0, 4)
-					})
 				-- 
-
-				library:tool_tip({name = cfg.name, path = items.button})
 			end 
 
-			items.sgui:GetPropertyChangedSignal("Enabled"):Connect(function()
-				items.Icon.ImageColor3 = items.sgui.Enabled and themes.preset.accent or themes.preset.inline
-			end)
-
-			items.button.MouseButton1Click:Connect(function()
-				items.sgui.Enabled = not items.sgui.Enabled
-			end)
-			
 			return setmetatable(cfg, library)
 		end 
 
@@ -1231,7 +1154,6 @@
 		function library:window(properties)
 			local window = {opened = true}            
 			local opened = {}
-			local dock_outline;
 			local blur = library:create( "BlurEffect" , {
 				Parent = lighting;
 				Enabled = true;
@@ -1263,8 +1185,6 @@
 
 				library:tween(blur, {Size = bool and (flags["Blur Size"] or 15) or 0})
 
-				dock_outline.Visible = bool;
-
 				sgui.Enabled = true
 				notif_holder.Enabled = true
 				tooltip_sgui.Enabled = true
@@ -1281,99 +1201,6 @@
 				end
 			end 
 
-			-- dock init
-				dock_outline = library:create("Frame", {
-					Parent = sgui,
-					Name = "",
-					Visible = true,
-					BorderColor3 = rgb(0, 0, 0),
-					AnchorPoint = vec2(0.5, 0),
-					Position = dim2(0.5, 0, 0, 20),
-					Size = dim2(0, 157, 0, 39),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.outline
-				}); 
-
-				library:apply_theme(dock_outline, "outline", "BackgroundColor3"); 
-				dock_outline.Position = dim2(0, dock_outline.AbsolutePosition.X, 0, dock_outline.AbsolutePosition.Y); 
-				dock_outline.AnchorPoint = vec2(0, 0); 
-				library:draggify(dock_outline);
-
-				local dock_inline = library:create("Frame", {
-					Parent = dock_outline,
-					Name = "",
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline
-				}) library:apply_theme(dock_inline, "inline", "BackgroundColor3") 
-				
-				local dock_holder = library:create("Frame", {
-					Parent = dock_inline,
-					Name = "",
-					Size = dim2(1, -2, 1, -2),
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = themes.preset.outline,
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				}) library:apply_theme(dock_holder, "outline", "BackgroundColor3") 
-				
-				local accent = library:create("Frame", {
-					Parent = dock_holder,
-					Name = "",
-					Size = dim2(1, 0, 0, 2),
-					BorderColor3 = rgb(0, 0, 0),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
-				}) library:apply_theme(accent, "accent", "BackgroundColor3") 
-				
-				local UIGradient = library:create("UIGradient", {
-					Parent = accent,
-					Name = "",
-					Rotation = 90,
-					Color = rgbseq{
-					rgbkey(0, rgb(255, 255, 255)),
-					rgbkey(1, rgb(167, 167, 167))
-				}
-				})
-				
-				local button_holder = library:create("Frame", {
-					Parent = dock_holder,
-					Name = "",
-					BackgroundTransparency = 1,
-					Size = dim2(1, 0, 1, 0),
-					BorderColor3 = rgb(0, 0, 0),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				}) library.dock_holder = button_holder;
-				
-				local UIListLayout = library:create("UIListLayout", {
-					Parent = button_holder,
-					Name = "",
-					Padding = dim(0, 5),
-					FillDirection = Enum.FillDirection.Horizontal,
-					SortOrder = Enum.SortOrder.LayoutOrder
-				})
-				
-				local UIPadding = library:create("UIPadding", {
-					Parent = button_holder,
-					Name = "",
-					PaddingTop = dim(0, 6),
-					PaddingBottom = dim(0, 4),
-					PaddingRight = dim(0, 4),
-					PaddingLeft = dim(0, 4)
-				})
-						
-				local UIGradient = library:create("UIGradient", {
-					Parent = dock_holder,
-					Name = "",
-					Rotation = 90,
-					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
-					}
-				}) library:apply_theme(UIGradient, "contrast", "Color") 
 			-- 
 
 			-- keybind list
@@ -1550,7 +1377,6 @@
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(255, 255, 255)
 				})
-				window["tab_holder"].Visible = false
 
 				library:create("UIListLayout", {
 					Parent = window["tab_holder"],
@@ -1564,9 +1390,9 @@
 					Parent = items.holder,
 					Name = " ",
 					BackgroundTransparency = 1,
-					Position = dim2(0, -1, 0, 0),
+					Position = dim2(0, -1, 0, 19),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, 0, 1, 0),
+					Size = dim2(1, 0, 1, -22),
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(255, 255, 255)
 				})
@@ -1629,113 +1455,113 @@
 				library:make_resizable(items.main_holder) 
 			-- 
 
-			-- settings tab (style and configurations)
-				local tab_context = setmetatable({tab_holder = window["tab_holder"]}, library)
-				local settings_tab = tab_context:tab({name = "Settings"})
-				local left = settings_tab:column()
-				local right = settings_tab:column()
-
+			-- theming in Settings tab
+				local settings_tab = setmetatable(window, library):tab({name = "Settings"})
 				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})
-
 				task.spawn(function()
-					while task.wait(1) do 
+					while task.wait(1) do
 						watermark.change_text(os.date('Atlanta - Beta - %b %d %Y - %H:%M:%S'))
-					end 
+					end
 				end)
-
-				do
-					local section = left:section({name = "Theme"})
-					section:label({name = "Accent"})
-					:colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
-						library:update_theme("accent", color)
-					end, flag = "Accent"})
-					section:label({name = "Contrast"})
-					:colorpicker({name = "Low", color = themes.preset.low_contrast, flag = "low_contrast", callback = function(color)
-						if (flags["high_contrast"] and flags["low_contrast"]) then 
-							library:update_theme("contrast", rgbseq{
-								rgbkey(0, flags["low_contrast"].Color),
-								rgbkey(1, flags["high_contrast"].Color)
-							})
-						end 
-
-						library:update_theme("low_contrast", flags["low_contrast"].Color)
-					end})
-					:colorpicker({name = "High", color = themes.preset.high_contrast, flag = "high_contrast", callback = function(color)
+				local column = library:column(settings_tab.holder)
+				local section = column:section({name = "Theme"})
+				section:label({name = "Accent"})
+				:colorpicker({name = "Accent", color = themes.preset.accent, flag = "Accent", callback = function(color, alpha)
+					library:update_theme("accent", color)
+				end})
+				section:label({name = "Contrast"})
+				:colorpicker({name = "Low", color = themes.preset.low_contrast, flag = "low_contrast", callback = function(color)
+					if (flags["high_contrast"] and flags["low_contrast"]) then
 						library:update_theme("contrast", rgbseq{
 							rgbkey(0, flags["low_contrast"].Color),
 							rgbkey(1, flags["high_contrast"].Color)
 						})
+					end
+					library:update_theme("low_contrast", flags["low_contrast"].Color)
+				end})
+				:colorpicker({name = "High", color = themes.preset.high_contrast, flag = "high_contrast", callback = function(color)
+					library:update_theme("contrast", rgbseq{
+						rgbkey(0, flags["low_contrast"].Color),
+						rgbkey(1, flags["high_contrast"].Color)
+					})
+					library:update_theme("high_contrast", flags["high_contrast"].Color)
+				end})
+				section:label({name = "Inline"})
+				:colorpicker({name = "Inline", color = themes.preset.inline, flag = "Inline", callback = function(color, alpha)
+					library:update_theme("inline", color)
+				end})
+				section:label({name = "Outline"})
+				:colorpicker({name = "Outline", color = themes.preset.outline, flag = "Outline", callback = function(color, alpha)
+					library:update_theme("outline", color)
+				end})
+				section:label({name = "Text Color"})
+				:colorpicker({name = "Main", color = themes.preset.text, flag = "Main", callback = function(color, alpha)
+					library:update_theme("text", color)
+				end})
+				:colorpicker({name = "Outline", color = themes.preset.text_outline, flag = "Outline", callback = function(color, alpha)
+					library:update_theme("text_outline", color)
+				end})
+				section:label({name = "Glow"})
+				:colorpicker({name = "Glow", color = themes.preset.glow, flag = "Glow", callback = function(color, alpha)
+					library:update_theme("glow", color)
+				end})
+				section:slider({name = "Blur Size", flag = "Blur Size", min = 0, max = 56, default = 15, interval = 1, callback = function(int)
+					if window.opened then
+						blur.Size = int
+					end
+				end})
+				local section2 = column:section({name = "Other"})
+				section2:label({name = "UI Bind"})
+				:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
+				section2:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
+					library.keybind_list_frame.Visible = bool
+				end})
+				section2:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
+					watermark.set_visible(bool)
+				end})
+				section2:button_holder({})
+				section2:button({name = "Copy JobId", callback = function()
+					setclipboard(game.JobId)
+				end})
+				section2:button_holder({})
+				section2:button({name = "Copy GameID", callback = function()
+					setclipboard(game.GameId)
+				end})
+				section2:button_holder({})
+				section2:button({name = "Copy Join Script", callback = function()
+					setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(' .. game.PlaceId .. ', "' .. game.JobId .. '", game.Players.LocalPlayer)')
+				end})
+				section2:button_holder({})
+				section2:button({name = "Rejoin", callback = function()
+					game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, lp)
+				end})
+				section2:button_holder({})
+				section2:button({name = "Join New Server", callback = function()
+					local apiRequest = game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+					local data = apiRequest.data[random(1, #apiRequest.data)]
+					if data.playing <= flags["max_players"] then
+						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, data.id)
+					end
+				end})
+				section:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
+			-- 
 
-						library:update_theme("high_contrast", flags["high_contrast"].Color)
-					end})
-					section:label({name = "Inline"})
-					:colorpicker({name = "Inline", color = themes.preset.inline, callback = function(color, alpha)
-						library:update_theme("inline", color)
-					end, flag = "Inline"})
-					section:label({name = "Outline"})
-					:colorpicker({name = "Outline", color = themes.preset.outline, callback = function(color, alpha)
-						library:update_theme("outline", color)
-					end, flag = "Outline"})
-					section:label({name = "Text Color"})
-					:colorpicker({name = "Main", color = themes.preset.text, callback = function(color, alpha)
-						library:update_theme("text", color)
-					end, flag = "Main"})
-					:colorpicker({name = "Outline", color = themes.preset.text_outline, callback = function(color, alpha)
-						library:update_theme("text_outline", color)
-					end, flag = "Outline"})
-					section:label({name = "Glow"})
-					:colorpicker({name = "Glow", color = themes.preset.glow, callback = function(color, alpha)
-						library:update_theme("glow", color)
-					end, flag = "Glow"})
-					section:slider({name = "Blur Size", flag = "Blur Size", min = 0, max = 56, default = 15, interval = 1, callback = function(int)
-						if window.opened then 
-							blur.Size = int
-						end
-					end})
+			-- cfg holder
+				local holder = library:panel({
+					name = "Configurations", 
+					size = dim2(0, 324, 0, 410),
+					position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
+					image = "rbxassetid://105199726008012",
+				}) 
 
-					local other = left:section({name = "Other"})
-					other:label({name = "UI Bind"})
-					:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
-					other:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
-						library.keybind_list_frame.Visible = bool
-					end})
-					other:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
-						watermark.set_visible(bool)
-					end})
-					other:button_holder({})
-					other:button({name = "Copy JobId", callback = function()
-						setclipboard(game.JobId)
-					end})
-					other:button_holder({})
-					other:button({name = "Copy GameID", callback = function()
-						setclipboard(game.GameId)
-					end})
-					other:button_holder({})
-					other:button({name = "Copy Join Script", callback = function()
-						setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(' .. game.PlaceId .. ', "' .. game.JobId .. '", game.Players.LocalPlayer)')
-					end})
-					other:button_holder({})
-					other:button({name = "Rejoin", callback = function()
-						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, lp)
-					end})
-					other:button_holder({})
-					other:button({name = "Join New Server", callback = function()
-						local apiRequest = game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-						local data = apiRequest.data[random(1, #apiRequest.data)]
-							
-						if data.playing <= flags["max_players"] then 
-							game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, data.id)
-						end 
-					end})
-					other:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
-				end
+				local items = holder.items
 
-				do
-					getgenv().load_config = function(name)
-						library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
-					end 
+				getgenv().load_config = function(name)
+					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
+				end 
 
-					local section = right:section({name = "Configs"})
+				local column = setmetatable(items, library):column() 
+				local section = column:section({name = "Options"})
 					config_holder = section:list({flag = "config_name_list"})
 					section:textbox({flag = "config_name_text_box"})
 					section:button_holder({})
@@ -1778,8 +1604,11 @@
 
 						blur:Destroy()
 					end})
-				end
 			-- 
+					
+			--  
+
+			--  
 
 			return setmetatable(window, library)
 		end
@@ -1889,6 +1718,7 @@
 			return cfg 
 
 		end 
+
 
 		function library:refresh_notifications()  	
 			for _, notif in next, library.notifications do 
@@ -2628,9 +2458,9 @@
 				local slider = library:create("TextButton", {
 					Parent = bottom_components,
 					Name = "slider",
-					Position = dim2(0, 20, 0, 2),
+					Position = dim2(0, 0, 0, 2),
 					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -40, 1, 12),
+					Size = dim2(1, -1, 1, 12),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.outline,
 					Text = "",
@@ -2721,49 +2551,6 @@
 						rgbkey(1, rgb(167, 167, 167))
 					}
 				})
-
-				local controls = library:create("Frame", {
-					Parent = slider_REAL,
-					Name = "controls",
-					BackgroundTransparency = 1,
-					Position = dim2(0, 0, 0, cfg.name and 15 or 0),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, 0, 0, 16),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				})
-				local minus_button = library:create("TextButton", {
-					Parent = controls,
-					Name = "minus",
-					AnchorPoint = vec2(0, 0),
-					Position = dim2(0, 0, 0, 2),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(0, 16, 0, 12),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-					Text = "-",
-					AutoButtonColor = false,
-					ZIndex = 3,
-					FontFace = library.font,
-					TextColor3 = themes.preset.text,
-					TextSize = 12
-				}) library:apply_theme(minus_button, "inline", "BackgroundColor3")
-				local plus_button = library:create("TextButton", {
-					Parent = controls,
-					Name = "plus",
-					AnchorPoint = vec2(1, 0),
-					Position = dim2(1, -16, 0, 2),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(0, 16, 0, 12),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-					Text = "+",
-					AutoButtonColor = false,
-					ZIndex = 3,
-					FontFace = library.font,
-					TextColor3 = themes.preset.text,
-					TextSize = 12
-				}) library:apply_theme(plus_button, "inline", "BackgroundColor3")
 				
 				library:create("UIListLayout", {
 					Parent = bottom_components,
@@ -2812,16 +2599,6 @@
 
 				slider.MouseButton1Down:Connect(function()
 					cfg.dragging = true
-				end)
-
-				minus_button.MouseButton1Click:Connect(function()
-					local step = cfg.intervals > 0 and cfg.intervals or 1
-					cfg.set(cfg.value - step)
-				end)
-
-				plus_button.MouseButton1Click:Connect(function()
-					local step = cfg.intervals > 0 and cfg.intervals or 1
-					cfg.set(cfg.value + step)
 				end)
 			end
 
