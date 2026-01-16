@@ -719,7 +719,7 @@
 						BorderColor3 = rgb(0, 0, 0),
 						Size = dim2(1, -2, 1, -2),
 						BorderSizePixel = 0,
-						BackgroundColor3 = themes.preset.accent
+						BackgroundColor3 = themes.preset.outline
 					})
 					
 					library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
@@ -1455,8 +1455,10 @@
 				library:make_resizable(items.main_holder) 
 			-- 
 
+			-- initialize neutral contrast gradient
+				library:update_theme("contrast", rgbseq{rgbkey(0, themes.preset.low_contrast), rgbkey(1, themes.preset.high_contrast)})
 			-- theming in Settings tab
-				local settings_tab = setmetatable(window, library):tab({name = "Settings"})
+				local settings_tab = setmetatable(window, library):tab({name = "Settings", order = 1000})
 				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})
 				task.spawn(function()
 					while task.wait(1) do
@@ -1875,6 +1877,7 @@
 					BackgroundColor3 = themes.preset.outline,
 					AutoButtonColor = false
 				}) library:apply_theme(tab_holder, "outline", "BackgroundColor3") 
+				tab_holder.LayoutOrder = (options and options.order) or 0
 
 				local inline = library:create("Frame", {
 					Parent = tab_holder,
@@ -2752,7 +2755,7 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
+					BackgroundColor3 = themes.preset.outline
 				})
 				library:apply_theme(background, "outline", "BackgroundColor3") 
 
@@ -3947,7 +3950,7 @@
 					Size = dim2(1, -2, 1, -2),
 					ZIndex = 2;
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				}) library:apply_theme(background, "outline", "BackgroundColor3") 
 				
 				local contrast = library:create("Frame", {
@@ -4084,7 +4087,7 @@
 						Size = dim2(1, -2, 1, 1),
 						ZIndex = 2,
 						BorderSizePixel = 0,
-						BackgroundColor3 = themes.preset.accent,
+						BackgroundColor3 = themes.preset.outline,
 						CanvasSize = dim2(0, 0, 0, 0),
 						AutomaticCanvasSize = Enum.AutomaticSize.Y,
 						ScrollBarThickness = 2,
@@ -4351,7 +4354,7 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				}) library:apply_theme(background, "outline", "BackgroundColor3") 
 				
 				local UIGradient = library:create("UIGradient", {
@@ -4580,7 +4583,7 @@
 					ZIndex = 2;
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				})
 				
 				library:apply_theme(background, "outline", "BackgroundColor3") 
@@ -4769,7 +4772,7 @@
 				BorderColor3 = rgb(0, 0, 0),
 				Size = dim2(1, -2, 1, -2),
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent
+				BackgroundColor3 = themes.preset.outline
 			})
 			
 			library:apply_theme(background, "outline", "BackgroundColor3") 
