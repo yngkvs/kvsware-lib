@@ -252,7 +252,7 @@
 				BorderColor3 = rgb(0, 0, 0),
 				Size = dim2(1, 0, 1, 0),
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent,
+						BackgroundColor3 = themes.preset.outline,
 				ZIndex = 1;
 			}) library:apply_theme(hover_instance, "accent", "BackgroundColor3") 
 
@@ -712,7 +712,7 @@
 
 					--library:apply_theme(main_holder, "outline", "BackgroundColor3") 
 					
-					items.window_inline = library:create("Frame", {
+				items.window_inline = library:create("Frame", {
 						Parent = items.main_holder,
 						Name = "",
 						Position = dim2(0, 1, 0, 1),
@@ -720,9 +720,9 @@
 						Size = dim2(1, -2, 1, -2),
 						BorderSizePixel = 0,
 						BackgroundColor3 = themes.preset.outline
-					})
-					
-					library:apply_theme(items.window_inline, "accent", "BackgroundColor3") 
+				})
+				
+				library:apply_theme(items.window_inline, "outline", "BackgroundColor3") 
 					
 					items.window_holder = library:create("Frame", {
 						Parent = items.window_inline,
@@ -920,8 +920,8 @@
 					BorderColor3 = rgb(0, 0, 0);
 					Size = dim2(1, -2, 1, -2);
 					BorderSizePixel = 0;
-					BackgroundColor3 = themes.preset.accent
-				});	library:apply_theme(items.Accent, "accent", "BackgroundColor3")
+					BackgroundColor3 = themes.preset.outline
+				});	library:apply_theme(items.Accent, "outline", "BackgroundColor3")
 				
 				items.Background = library:create( "Frame" , {
 					Parent = items.Accent;
@@ -1259,7 +1259,7 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = dim2(1, 0, 0, 2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				}); library:apply_theme(bg, "accent", "BackgroundColor3")
 				
 				
@@ -1786,7 +1786,7 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = UDim2.new(0, 1, 1, -4),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				})
 
 				library:apply_theme(accent, "accent", "BackgroundColor3")
@@ -2896,8 +2896,8 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
-				}) library:apply_theme(window_inline, "accent", "BackgroundColor3") 
+					BackgroundColor3 = themes.preset.outline
+				}) library:apply_theme(window_inline, "outline", "BackgroundColor3") 
 				
 				local window_holder = library:create("Frame", {
 					Parent = window_inline,
@@ -4071,7 +4071,7 @@
 						Size = dim2(1, -2, 1, 1),
 						ZIndex = 2,
 						BorderSizePixel = 0,
-						BackgroundColor3 = themes.preset.accent
+						BackgroundColor3 = themes.preset.outline
 					})
 					library:apply_theme(background, "outline", "BackgroundColor3") 
 				else 
@@ -5020,7 +5020,7 @@
 					BorderColor3 = rgb(0, 0, 0),
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
+					BackgroundColor3 = themes.preset.outline
 				})
 				
 				local UIGradient = library:create("UIGradient", {
