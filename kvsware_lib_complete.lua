@@ -1463,8 +1463,9 @@
 						watermark.change_text(os.date('Atlanta - Beta - %b %d %Y - %H:%M:%S'))
 					end
 				end)
-				local column = library:column(settings_tab.holder)
-				local section = column:section({name = "Theme"})
+				local left = library:column(settings_tab.holder)
+				local right = library:column(settings_tab.holder)
+				local section = left:section({name = "Theme"})
 				section:label({name = "Accent"})
 				:colorpicker({name = "Accent", color = themes.preset.accent, flag = "Accent", callback = function(color, alpha)
 					library:update_theme("accent", color)
@@ -1510,7 +1511,7 @@
 						blur.Size = int
 					end
 				end})
-				local section2 = column:section({name = "Other"})
+				local section2 = left:section({name = "Other"})
 				section2:label({name = "UI Bind"})
 				:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
 				section2:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
@@ -1543,67 +1544,52 @@
 						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, data.id)
 					end
 				end})
+				local cfg_section = right:section({name = "Configurations"})
+				getgenv().load_config = function(name)
+					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
+				end
+				config_holder = cfg_section:list({flag = "config_name_list"})
+				cfg_section:textbox({flag = "config_name_text_box"})
+				cfg_section:button_holder({})
+				cfg_section:button({name = "Create", callback = function()
+					writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
+					library:config_list_update()
+				end})
+				cfg_section:button({name = "Delete", callback = function()
+					delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
+					library:config_list_update()
+				end})
+				cfg_section:button_holder({})
+				cfg_section:button({name = "Load", callback = function()
+					library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
+					library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
+				end})
+				cfg_section:button({name = "Save", callback = function()
+					writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
+					library:config_list_update()
+					library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
+				end})
+				cfg_section:button_holder({})
+				cfg_section:button({name = "Refresh Configs", callback = function()
+					library:config_list_update()
+				end})
+				cfg_section:button_holder({})
+				cfg_section:button({name = "Unload Config", callback = function()
+					library:load_config(library.old_config)
+				end})
+				cfg_section:button({name = "Unload Menu", callback = function()
+					library:load_config(library.old_config)
+					for _, gui in library.guis do
+						gui:Destroy()
+					end
+					for _, connection in library.connections do
+						connection:Disconnect()
+					end
+					blur:Destroy()
+				end})
 				section:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
 			-- 
 
-			-- cfg holder
-				local holder = library:panel({
-					name = "Configurations", 
-					size = dim2(0, 324, 0, 410),
-					position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
-					image = "rbxassetid://105199726008012",
-				}) 
-
-				local items = holder.items
-
-				getgenv().load_config = function(name)
-					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
-				end 
-
-				local column = setmetatable(items, library):column() 
-				local section = column:section({name = "Options"})
-					config_holder = section:list({flag = "config_name_list"})
-					section:textbox({flag = "config_name_text_box"})
-					section:button_holder({})
-					section:button({name = "Create", callback = function()
-						writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
-						library:config_list_update()
-					end})
-					section:button({name = "Delete", callback = function()
-						delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
-						library:config_list_update()
-					end})
-					section:button_holder({})
-					section:button({name = "Load", callback = function()
-						library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
-						library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
-					end})
-					section:button({name = "Save", callback = function()
-						writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
-						library:config_list_update()
-						library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
-					end})
-					section:button_holder({})
-					section:button({name = "Refresh Configs", callback = function()
-						library:config_list_update()
-					end})
-					section:button_holder({})
-					section:button({name = "Unload Config", callback = function()
-						library:load_config(library.old_config)
-					end})
-					section:button({name = "Unload Menu", callback = function()
-						library:load_config(library.old_config)
-
-						for _, gui in library.guis do 
-							gui:Destroy() 
-						end 
-
-						for _, connection in library.connections do 
-							connection:Disconnect() 
-						end
-
-						blur:Destroy()
-					end})
 			-- 
 					
 			--  
@@ -2723,7 +2709,7 @@
 					ZIndex = 1, 
 					BackgroundColor3 = themes.preset.outline
 				}) library:apply_theme(toggle, "outline", "BackgroundColor3") 
-				library:apply_theme(toggle, "accent", "BackgroundColor3") 
+				
 
 				local inline = library:create("Frame", {
 					Parent = toggle,
@@ -2768,7 +2754,7 @@
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(255, 255, 255)
 				})
-				library:apply_theme(background, "accent", "BackgroundColor3") 
+				library:apply_theme(background, "outline", "BackgroundColor3") 
 
 				local UIGradient = library:create("UIGradient", {
 					Parent = background,
@@ -3962,7 +3948,7 @@
 					ZIndex = 2;
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.accent
-				}) library:apply_theme(background, "accent", "BackgroundColor3") 
+				}) library:apply_theme(background, "outline", "BackgroundColor3") 
 				
 				local contrast = library:create("Frame", {
 					Parent = background,
@@ -4084,7 +4070,7 @@
 						BorderSizePixel = 0,
 						BackgroundColor3 = themes.preset.accent
 					})
-					library:apply_theme(background, "accent", "BackgroundColor3") 
+					library:apply_theme(background, "outline", "BackgroundColor3") 
 				else 
 					background = library:create("ScrollingFrame", {
 						Parent = inline,
@@ -4104,7 +4090,7 @@
 						ScrollBarThickness = 2,
 						ScrollBarImageColor3 = themes.preset.accent
 					})
-					library:apply_theme(background, "accent", "BackgroundColor3") 
+					library:apply_theme(background, "outline", "BackgroundColor3") 
 					library:apply_theme(background, "accent", "ScrollBarImageColor3") 
 				end 
 				
@@ -4366,7 +4352,7 @@
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.accent
-				}) library:apply_theme(background, "accent", "BackgroundColor3") 
+				}) library:apply_theme(background, "outline", "BackgroundColor3") 
 				
 				local UIGradient = library:create("UIGradient", {
 					Parent = background,
@@ -4597,7 +4583,7 @@
 					BackgroundColor3 = themes.preset.accent
 				})
 				
-				library:apply_theme(background, "accent", "BackgroundColor3") 
+				library:apply_theme(background, "outline", "BackgroundColor3") 
 				
 				local TextBox = library:create("TextBox", {
 					Parent = background,
@@ -4786,7 +4772,7 @@
 				BackgroundColor3 = themes.preset.accent
 			})
 			
-			library:apply_theme(background, "accent", "BackgroundColor3") 
+			library:apply_theme(background, "outline", "BackgroundColor3") 
 			
 			local _UIGradient = library:create("UIGradient", {
 				Parent = background,
