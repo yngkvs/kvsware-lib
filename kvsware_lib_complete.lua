@@ -5,8 +5,11 @@ local UILib = {}
 
 UILib.Theme = {
     OutlineColor = Color3.fromRGB(255, 170, 0),
+    InlineColor = Color3.fromRGB(26, 26, 36),
     BackgroundColor = Color3.fromRGB(15, 15, 18),
     InnerBackgroundColor = Color3.fromRGB(10, 10, 12),
+    GradientTopColor = Color3.fromRGB(41, 41, 55),
+    GradientBottomColor = Color3.fromRGB(35, 35, 47),
     AccentColor = Color3.fromRGB(255, 210, 60),
     TextColor = Color3.fromRGB(230, 230, 230),
     TabInactiveColor = Color3.fromRGB(20, 20, 24),
@@ -137,17 +140,41 @@ function UILib:CreateWindow(opts)
     tabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     tabLayout.Parent = tabBar
 
-    local contentContainer = Instance.new("Frame")
-    contentContainer.Name = "Content"
-    contentContainer.BackgroundColor3 = theme.InnerBackgroundColor
-    contentContainer.BorderSizePixel = 0
-    contentContainer.Size = UDim2.new(1, -8, 1, -titleBar.Size.Y.Offset - tabBar.Size.Y.Offset - 8)
-    contentContainer.Position = UDim2.new(0, 4, 0, titleBar.Size.Y.Offset + tabBar.Size.Y.Offset + 4)
-    contentContainer.Parent = coreLayer
-
     local tabPadding = Instance.new("UIPadding")
     tabPadding.PaddingLeft = UDim.new(0, 6)
     tabPadding.Parent = tabBar
+
+    local sectionHolder = Instance.new("Frame")
+    sectionHolder.Name = "SectionHolder"
+    sectionHolder.BackgroundTransparency = 1
+    sectionHolder.BorderSizePixel = 0
+    sectionHolder.Size = UDim2.new(1, -8, 1, -titleBar.Size.Y.Offset - tabBar.Size.Y.Offset - 8)
+    sectionHolder.Position = UDim2.new(0, 4, 0, titleBar.Size.Y.Offset + tabBar.Size.Y.Offset + 4)
+    sectionHolder.Parent = coreLayer
+
+    local outline = Instance.new("Frame")
+    outline.Name = "Outline"
+    outline.BackgroundColor3 = outlineColor
+    outline.BorderSizePixel = 0
+    outline.Position = UDim2.new(0, 1, 0, 1)
+    outline.Size = UDim2.new(1, 0, 1, 2)
+    outline.Parent = sectionHolder
+
+    local inline = Instance.new("Frame")
+    inline.Name = "Inline"
+    inline.BackgroundColor3 = theme.InlineColor
+    inline.BorderSizePixel = 0
+    inline.Position = UDim2.new(0, 1, 0, 1)
+    inline.Size = UDim2.new(1, -2, 1, -2)
+    inline.Parent = outline
+
+    local contentContainer = Instance.new("Frame")
+    contentContainer.Name = "Content"
+    contentContainer.BackgroundColor3 = theme.BackgroundColor
+    contentContainer.BorderSizePixel = 0
+    contentContainer.Position = UDim2.new(0, 1, 0, 1)
+    contentContainer.Size = UDim2.new(1, -2, 1, -2)
+    contentContainer.Parent = inline
 
     local contentPadding = Instance.new("UIPadding")
     contentPadding.PaddingTop = UDim.new(0, 4)
@@ -155,6 +182,11 @@ function UILib:CreateWindow(opts)
     contentPadding.PaddingRight = UDim.new(0, 4)
     contentPadding.PaddingBottom = UDim.new(0, 4)
     contentPadding.Parent = contentContainer
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = 90
+    gradient.Color = ColorSequence.new(theme.GradientTopColor, theme.GradientBottomColor)
+    gradient.Parent = contentContainer
 
     local selfWindow = setmetatable({}, WindowMethods)
 
@@ -210,7 +242,7 @@ function WindowMethods:AddTab(name)
 
     local page = Instance.new("Frame")
     page.Name = name .. "Page"
-    page.BackgroundColor3 = theme.InnerBackgroundColor
+    page.BackgroundTransparency = 1
     page.BorderSizePixel = 0
     page.Size = UDim2.new(1, 0, 1, 0)
     page.Visible = false
@@ -266,4 +298,3 @@ function WindowMethods:Destroy()
 end
 
 return UILib
-
