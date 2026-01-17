@@ -106,12 +106,12 @@
 		preset = {
 			["outline"] = hex("#0A0A0A"), -- 
 			["inline"] = hex("#2D2D2D"), --
-			["accent"] = hex("#6078BE"), --
+			["accent"] = hex("#000000"), --
 			["high_contrast"] = hex("#141414"),
 			["low_contrast"] = hex("#1E1E1E"),
 			["text"] = hex("#B4B4B4"),
 			["text_outline"] = rgb(0, 0, 0),
-			["glow"] = hex("#6078BE"), 
+			["glow"] = hex("#000000"), 
 		},
 
 		utility = {
@@ -1633,7 +1633,9 @@
 				end) 
 			-- 
 
-			-- Settings tab
+			-- Settings tab (created last so it appears on the far right)
+				-- Ensure tab_holder is accessible
+				window.tab_holder = window["tab_holder"]
 				local settings_tab = window:tab({name = "Settings"})
 				local settings_column = setmetatable(settings_tab.holder, library):column()
 				
