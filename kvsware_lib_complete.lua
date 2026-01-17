@@ -1416,8 +1416,8 @@
 					Name = "",
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
+						rgbkey(0, themes.preset.high_contrast),
+						rgbkey(1, themes.preset.low_contrast)
 					}
 				})
 				library:apply_theme(UIGradient, "contrast", "Color") 
@@ -1505,8 +1505,8 @@
 					Name = "",
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
+						rgbkey(0, themes.preset.high_contrast),
+						rgbkey(1, themes.preset.low_contrast)
 					}
 				})
 				library:apply_theme(UIGradient, "contrast", "Color") 
@@ -1788,24 +1788,6 @@
 						blur:Destroy()
 					end})
 			-- 
-					
-			-- esp preview
-				local holder = library:panel({
-					name = "ESP Preview", 
-					anchor_point = vec2(0, 0),
-					size = dim2(0, 300, 0, 325),
-					position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
-					image = "rbxassetid://77684377836328",
-				})  
-				
-				local items = holder.items
-				
-				local column = setmetatable(items, library):column() 
-				window.esp_section = column:section({name = "Main"})
-			--  
-
-			-- Settings tab (created last so it appears on the far right)
-				local settings_tab = window:tab({name = "Settings"})
 			--  
 
 			return setmetatable(window, library)
@@ -2381,8 +2363,8 @@
 					Parent = watermark_background,
 					Name = "",
 					Color = ColorSequence.new{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
+						rgbkey(0, themes.preset.high_contrast),
+						rgbkey(1, themes.preset.low_contrast)
 					}
 				})
 		
