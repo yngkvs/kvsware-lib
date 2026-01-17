@@ -271,9 +271,6 @@
 			return hover_instance;
 		end 
 
-		function library:AddTab(name)
-			return self:tab({name = name})
-		end
 
 		function library:hovering(Object)
 			if type(Object) == "table" then 
@@ -347,14 +344,6 @@
 			end)
 		end
 
-		function library:CreateWindow(options)
-			local title = (options and (options.Title or options.title)) or os.date('Atlanta |  - %b %d %Y')
-			local win = self:window({name = title})
-			if options and options.AutoShow == false then
-				win.set_menu_visibility(false)
-			end
-			return win
-		end 
 
 		function library:draggify(frame)
 			local dragging = false 
