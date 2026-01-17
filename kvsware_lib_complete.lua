@@ -3826,7 +3826,7 @@
 				set_visible = function(v) holder.Visible = v end
 			}
 			
-			return setmetatable(cfg, library)
+			return self
 		end
 		
 		function library:AddDivider(options)
