@@ -1614,8 +1614,8 @@
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
+						rgbkey(0, themes.preset.high_contrast),
+						rgbkey(1, themes.preset.low_contrast)
 					}
 				})
 				
@@ -1634,9 +1634,8 @@
 			-- 
 
 			-- Settings tab (created last so it appears on the far right)
-				-- Ensure tab_holder is accessible
-				window.tab_holder = window["tab_holder"]
-				local settings_tab = window:tab({name = "Settings"})
+				-- Create Settings tab using library:tab with window as self
+				local settings_tab = library.tab(window, {name = "Settings"})
 				local settings_column = setmetatable(settings_tab.holder, library):column()
 				
 				-- Theme section
