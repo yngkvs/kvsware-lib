@@ -1416,8 +1416,8 @@
 					Name = "",
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, themes.preset.high_contrast),
-						rgbkey(1, themes.preset.low_contrast)
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47))
 					}
 				})
 				library:apply_theme(UIGradient, "contrast", "Color") 
@@ -1505,8 +1505,8 @@
 					Name = "",
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, themes.preset.high_contrast),
-						rgbkey(1, themes.preset.low_contrast)
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47))
 					}
 				})
 				library:apply_theme(UIGradient, "contrast", "Color") 
@@ -2381,8 +2381,8 @@
 					Parent = watermark_background,
 					Name = "",
 					Color = ColorSequence.new{
-						rgbkey(0, themes.preset.high_contrast),
-						rgbkey(1, themes.preset.low_contrast)
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47))
 					}
 				})
 		
