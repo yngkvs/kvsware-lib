@@ -3780,6 +3780,58 @@
 		
 			return setmetatable(cfg, library) 
 		end
+		
+		function library:divider(options)
+			local thickness = (options and options.thickness) or 1
+			local margin = (options and options.margin) or 6
+			
+			local holder = library:create("TextLabel", {
+				Parent = self.holder,
+				FontFace = library.font,
+				TextColor3 = themes.preset.text,
+				BorderColor3 = rgb(0, 0, 0),
+				Text = "",
+				Name = "divider",
+				ZIndex = 1,
+				Size = dim2(1, -8, 0, margin + thickness),
+				BorderSizePixel = 0,
+				BackgroundTransparency = 1,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				AutomaticSize = Enum.AutomaticSize.None,
+				TextYAlignment = Enum.TextYAlignment.Top,
+				TextSize = 12,
+				BackgroundColor3 = rgb(255, 255, 255)
+			})
+			
+			local line = library:create("Frame", {
+				Parent = holder,
+				Name = "line",
+				Position = dim2(0, 4, 0, math.floor(margin / 2)),
+				BorderColor3 = rgb(0, 0, 0),
+				Size = dim2(1, -8, 0, thickness),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.outline
+			}) library:apply_theme(line, "outline", "BackgroundColor3")
+			
+			local UIGradient = library:create("UIGradient", {
+				Parent = line,
+				Rotation = 90,
+				Color = rgbseq{
+					rgbkey(0, themes.preset.high_contrast),
+					rgbkey(1, themes.preset.low_contrast)
+				}
+			}) library:apply_theme(UIGradient, "contrast", "Color")
+			
+			local cfg = {
+				set_visible = function(v) holder.Visible = v end
+			}
+			
+			return setmetatable(cfg, library)
+		end
+		
+		function library:AddDivider(options)
+			return self:divider(options)
+		end
 
 		function library:keybind(options)
 			local parent = self.right_holder
