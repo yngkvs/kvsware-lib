@@ -81,6 +81,7 @@
 		guis = {}, 
 		connections = {},   
 		notifications = {},
+		playerlist_data = {},
 
 		current_tab, 
 		current_element_open, 
@@ -106,12 +107,12 @@
 		preset = {
 			["outline"] = hex("#0A0A0A"), -- 
 			["inline"] = hex("#2D2D2D"), --
-			["accent"] = hex("#000000"), --
+			["accent"] = hex("#6078BE"), --
 			["high_contrast"] = hex("#141414"),
 			["low_contrast"] = hex("#1E1E1E"),
 			["text"] = hex("#B4B4B4"),
 			["text_outline"] = rgb(0, 0, 0),
-			["glow"] = hex("#000000"), 
+			["glow"] = hex("#6078BE"), 
 		},
 
 		utility = {
@@ -1614,8 +1615,8 @@
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, themes.preset.high_contrast),
-						rgbkey(1, themes.preset.low_contrast)
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47))
 					}
 				})
 				
@@ -1623,7 +1624,15 @@
 				library:make_resizable(items.main_holder) 
 			-- 
 
-			-- watermark
+			-- theming 
+				local style = library:panel({
+					name = "Style", 
+					anchor_point = vec2(0, 0),
+					size = dim2(0, 394, 0, 464),
+					position = dim2(0, main_window.items.main_holder.AbsolutePosition.X + main_window.items.main_holder.AbsoluteSize.X + 2, 0, main_window.items.main_holder.AbsolutePosition.Y),
+					image = "rbxassetid://115194686863276",
+				})
+
 				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})  
 
 				task.spawn(function()
@@ -1631,20 +1640,16 @@
 						watermark.change_text(os.date('Atlanta - Beta - %b %d %Y - %H:%M:%S'))
 					end 
 				end) 
-			-- 
 
-			-- Settings tab (created last so it appears on the far right)
-				-- Create Settings tab using library:tab with window as self
-				local settings_tab = library.tab(window, {name = "Settings"})
-				local settings_column = setmetatable(settings_tab.holder, library):column()
-				
-				-- Theme section
-				local theme_section = settings_column:section({name = "Theme"})
-				theme_section:label({name = "Accent"})
+				local items = style.items
+
+				local column = setmetatable(items, library):column() 
+				local section = column:section({name = "Theme"})
+				section:label({name = "Accent"})
 				:colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
 					library:update_theme("accent", color)
 				end, flag = "Accent"})
-				theme_section:label({name = "Contrast"})
+				section:label({name = "Contrast"})
 				:colorpicker({name = "Low", color = themes.preset.low_contrast, flag = "low_contrast", callback = function(color)
 					if (flags["high_contrast"] and flags["low_contrast"]) then 
 						library:update_theme("contrast", rgbseq{
@@ -1663,107 +1668,57 @@
 
 					library:update_theme("high_contrast", flags["high_contrast"].Color)
 				end})
-				theme_section:label({name = "Inline"})
+				section:label({name = "Inline"})
 				:colorpicker({name = "Inline", color = themes.preset.inline, callback = function(color, alpha)
 					library:update_theme("inline", color)
 				end, flag = "Inline"})
-				theme_section:label({name = "Outline"})
+				section:label({name = "Outline"})
 				:colorpicker({name = "Outline", color = themes.preset.outline, callback = function(color, alpha)
 					library:update_theme("outline", color)
 				end, flag = "Outline"})
-				theme_section:label({name = "Text Color"})
+				section:label({name = "Text Color"})
 				:colorpicker({name = "Main", color = themes.preset.text, callback = function(color, alpha)
 					library:update_theme("text", color)
 				end, flag = "Main"})
 				:colorpicker({name = "Outline", color = themes.preset.text_outline, callback = function(color, alpha)
 					library:update_theme("text_outline", color)
 				end, flag = "Outline"})
-				theme_section:label({name = "Glow"})
+				section:label({name = "Glow"})
 				:colorpicker({name = "Glow", color = themes.preset.glow, callback = function(color, alpha)
 					library:update_theme("glow", color)
 				end, flag = "Glow"})
-				theme_section:slider({name = "Blur Size", flag = "Blur Size", min = 0, max = 56, default = 15, interval = 1, callback = function(int)
+				section:slider({name = "Blur Size", flag = "Blur Size", min = 0, max = 56, default = 15, interval = 1, callback = function(int)
 					if window.opened then 
 						blur.Size = int
 					end
 				end})
-				
-				-- Configs section
-				local configs_section = settings_column:section({name = "Configurations"})
-				getgenv().load_config = function(name)
-					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
-				end 
-				config_holder = configs_section:list({flag = "config_name_list"})
-				configs_section:textbox({flag = "config_name_text_box"})
-				configs_section:button_holder({})
-				configs_section:button({name = "Create", callback = function()
-					writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
-					library:config_list_update()
-				end})
-				configs_section:button({name = "Delete", callback = function()
-					delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
-					library:config_list_update()
-				end})
-				configs_section:button_holder({})
-				configs_section:button({name = "Load", callback = function()
-					library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
-					library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
-				end})
-				configs_section:button({name = "Save", callback = function()
-					writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
-					library:config_list_update()
-					library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
-				end})
-				configs_section:button_holder({})
-				configs_section:button({name = "Refresh Configs", callback = function()
-					library:config_list_update()
-				end})
-				configs_section:button_holder({})
-				configs_section:button({name = "Unload Config", callback = function()
-					library:load_config(library.old_config)
-				end})
-				configs_section:button({name = "Unload Menu", callback = function()
-					library:load_config(library.old_config)
-
-					for _, gui in library.guis do 
-						gui:Destroy() 
-					end 
-
-					for _, connection in library.connections do 
-						connection:Disconnect() 
-					end
-
-					blur:Destroy()
-				end})
-				
-				-- Other section
-				local other_section = settings_column:section({name = "Other"})
-				other_section:label({name = "UI Bind"})
+				local section = column:section({name = "Other"})
+				section:label({name = "UI Bind"})
 				:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
-				other_section:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
+				section:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
 					library.keybind_list_frame.Visible = bool
 				end})
-				other_section:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
+				section:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
 					watermark.set_visible(bool)
 				end})
-				other_section:button_holder({})
-				other_section:button({name = "Copy JobId", callback = function()
+				section:button_holder({})
+				section:button({name = "Copy JobId", callback = function()
 					setclipboard(game.JobId)
 				end})
-				other_section:button_holder({})
-				other_section:button({name = "Copy GameID", callback = function()
+				section:button_holder({})
+				section:button({name = "Copy GameID", callback = function()
 					setclipboard(game.GameId)
 				end})
-				other_section:button_holder({})
-				other_section:button({name = "Copy Join Script", callback = function()
+				section:button_holder({})
+				section:button({name = "Copy Join Script", callback = function()
 					setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(' .. game.PlaceId .. ', "' .. game.JobId .. '", game.Players.LocalPlayer)')
 				end})
-				other_section:button_holder({})
-				other_section:button({name = "Rejoin", callback = function()
+				section:button_holder({})
+				section:button({name = "Rejoin", callback = function()
 					game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, lp)
 				end})
-				other_section:button_holder({})
-				other_section:button({name = "Join New Server", callback = function()
+				section:button_holder({})
+				section:button({name = "Join New Server", callback = function()
 					local apiRequest = game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
 					local data = apiRequest.data[random(1, #apiRequest.data)]
 						
@@ -1771,8 +1726,102 @@
 						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, data.id)
 					end 
 				end})
-				other_section:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
+				section:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
 			-- 
+
+			-- cfg holder
+				local holder = library:panel({
+					name = "Configurations", 
+					size = dim2(0, 324, 0, 410),
+					position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
+					image = "rbxassetid://105199726008012",
+				}) 
+
+				local items = holder.items
+
+				getgenv().load_config = function(name)
+					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
+				end 
+
+				local column = setmetatable(items, library):column() 
+				local section = column:section({name = "Options"})
+					config_holder = section:list({flag = "config_name_list"})
+					section:textbox({flag = "config_name_text_box"})
+					section:button_holder({})
+					section:button({name = "Create", callback = function()
+						writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
+						library:config_list_update()
+					end})
+					section:button({name = "Delete", callback = function()
+						delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
+						library:config_list_update()
+					end})
+					section:button_holder({})
+					section:button({name = "Load", callback = function()
+						library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
+						library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
+					end})
+					section:button({name = "Save", callback = function()
+						writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
+						library:config_list_update()
+						library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
+					end})
+					section:button_holder({})
+					section:button({name = "Refresh Configs", callback = function()
+						library:config_list_update()
+					end})
+					section:button_holder({})
+					section:button({name = "Unload Config", callback = function()
+						library:load_config(library.old_config)
+					end})
+					section:button({name = "Unload Menu", callback = function()
+						library:load_config(library.old_config)
+
+						for _, gui in library.guis do 
+							gui:Destroy() 
+						end 
+
+						for _, connection in library.connections do 
+							connection:Disconnect() 
+						end
+
+						blur:Destroy()
+					end})
+			-- 
+					
+			-- esp preview
+				local holder = library:panel({
+					name = "ESP Preview", 
+					anchor_point = vec2(0, 0),
+					size = dim2(0, 300, 0, 325),
+					position = dim2(0, style.items.main_holder.AbsolutePosition.X, 0, style.items.main_holder.AbsolutePosition.Y + style.items.main_holder.AbsoluteSize.Y + 2),
+					image = "rbxassetid://77684377836328",
+				})  
+				
+				local items = holder.items
+				
+				local column = setmetatable(items, library):column() 
+				window.esp_section = column:section({name = "Main"})
+			--  
+
+			-- playerlist 
+				local holder = library:panel({
+					name = "Playerlist", 
+					anchor_point = vec2(0, 0),
+					size = dim2(0, 529, 0, 445),
+					position = dim2(0, main_window.items.main_holder.AbsolutePosition.X - 531, 0, main_window.items.main_holder.AbsolutePosition.Y),
+					image = "rbxassetid://107070078834415",
+				})  
+				
+				local items = holder.items
+
+				local column = setmetatable(items, library):column() 
+				local section = column:section({name = "Playerlist"})
+				local playerlist = section:playerlist({})
+				section:dropdown({name = "Priority", items = {"Enemy", "Priority", "Neutral", "Friendly"}, default = "Neutral", flag = "PLAYERLIST_DROPDOWN", callback = function(text)
+					library.prioritize(text)
+				end})
+			--  
 
 			return setmetatable(window, library)
 		end
@@ -1882,6 +1931,420 @@
 			return cfg 
 
 		end 
+
+		function library:esp_preview(properties)
+			local cfg = {items = {}, rotation = 0; objects = {};}
+
+			lp.Character.Archivable = true
+			local character = lp.Character:Clone()
+			character.Animate:Destroy()
+
+			local items = cfg.items; do 
+				items.viewportframe = library:create( "ViewportFrame" , {
+					Parent = self.holder;
+					BackgroundTransparency = 1;
+					Size = dim2(1, 0, 0, 220);
+					BorderColor3 = rgb(0, 0, 0);
+					ZIndex = 1;
+					Position = dim2(0, 0, 0, 10);
+					BorderSizePixel = 0;
+					BackgroundColor3 = rgb(255, 255, 255)
+				});
+				
+				items.camera = library:create( "Camera" , {
+					FieldOfView = 70.00022888183594;
+					CameraType = Enum.CameraType.Track;
+					Focus = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1); -- bro wtf is this serializer doing
+					CFrame = cfr(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1);
+					Parent = ws;
+					Name = "\0"
+				}); 
+
+				items.viewportframe.CurrentCamera = items.camera -- sick
+				character.Parent = items.viewportframe
+
+				items.camera.CameraSubject = character
+
+				library:connection(run.RenderStepped, function()
+					task.wait()
+					cfg.rotation += 0.5
+					character:SetPrimaryPartCFrame(cfr(Vector3.new(0, 1, -6)) * angle(0, math.rad(cfg.rotation), 0))
+				end)
+			end 
+
+			local objects = cfg.objects; do 
+				objects[ "holder" ] = library:create( "Frame" , {
+					Parent = items.viewportframe;
+					Name = "\0";
+					BackgroundTransparency = 1;
+					Position = dim2(0.5, 0, 0.5, 10);
+					BorderColor3 = rgb(0, 0, 0);
+					Size = dim2(0, 135, 0, 190);
+					BorderSizePixel = 0;
+					AnchorPoint = vec2(0.5, 0.5);
+					BackgroundColor3 = rgb(255, 255, 255)
+				});
+				
+				objects[ "box_outline" ] = library:create( "UIStroke" , {
+					Parent = library.cache;
+					LineJoinMode = Enum.LineJoinMode.Miter
+				});
+				
+				objects[ "name" ] = library:create( "TextLabel" , {
+					FontFace = library.font;
+					Parent = library.cache;
+					TextColor3 = flags["Name_Color"].Color;
+					BorderColor3 = rgb(0, 0, 0);
+					Text = string.format("%s (@%s)", lp.DisplayName, lp.Name);
+					Name = "\0";
+					TextStrokeTransparency = 0;
+					AnchorPoint = vec2(0, 1);
+					Size = dim2(1, 0, 0, 0);
+					BackgroundTransparency = 1;
+					Position = dim2(0, 0, 0, -5);
+					BorderSizePixel = 0;
+					AutomaticSize = Enum.AutomaticSize.Y;
+					TextSize = 12;
+				});
+				
+				objects[ "box_handler" ] = library:create( "Frame" , {
+					Parent = library.cache;
+					Name = "\0";
+					BackgroundTransparency = 1;
+					Position = dim2(0, 1, 0, 1);
+					BorderColor3 = rgb(0, 0, 0);
+					Size = dim2(1, -2, 1, -2);
+					BorderSizePixel = 0;
+					BackgroundColor3 = rgb(255, 255, 255)
+				});
+				
+				objects[ "box_color" ] = library:create( "UIStroke" , {
+					Color = rgb(255, 255, 255);
+					LineJoinMode = Enum.LineJoinMode.Miter;
+					Name = "\0";
+					Parent = objects[ "box_handler" ]
+				});
+				
+				objects[ "outline" ] = library:create( "Frame" , {
+					Parent = objects[ "box_handler" ];
+					Name = "\0";
+					BackgroundTransparency = 1;
+					Position = dim2(0, 1, 0, 1);
+					BorderColor3 = rgb(0, 0, 0);
+					Size = dim2(1, -2, 1, -2);
+					BorderSizePixel = 0;
+					BackgroundColor3 = rgb(255, 255, 255)
+				});
+				
+				library:create( "UIStroke" , {
+					Parent = objects[ "outline" ];
+					LineJoinMode = Enum.LineJoinMode.Miter
+				});  
+				
+				-- Corner Boxes
+					objects[ "corners" ] = library:create( "Frame" , {
+						Visible = true;
+						BorderColor3 = rgb(0, 0, 0);
+						Parent = library.cache;
+						BackgroundTransparency = 1;
+						Position = dim2(0, -1, 0, 2);
+						Name = "\0";
+						Size = dim2(1, 0, 1, 0);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(255, 255, 255)
+					});
+
+					objects[ "1" ] = library:create( "Frame" , {
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(0, 0, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0.4, 0, 0, 3);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "1" ];
+						Position = dim2(0, 1, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, -2);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "2" ] = library:create( "Frame" , {
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(0, 0, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0, 3, 0.25, 0);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "2" ];
+						Position = dim2(0, 1, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "3" ] = library:create( "Frame" , {
+						AnchorPoint = vec2(1, 0);
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(1, 0, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0.4, 0, 0, 3);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "3" ];
+						Position = dim2(0, 1, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, -2);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "4" ] = library:create( "Frame" , {
+						AnchorPoint = vec2(1, 0);
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(1, 0, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0, 3, 0.25, 0);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "4" ];
+						Position = dim2(0, 1, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "5" ] = library:create( "Frame" , {
+						AnchorPoint = vec2(0, 1);
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(0, -1, 1, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0.4, 0, 0, 3);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "5" ];
+						Position = dim2(0, 1, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, -2);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "6" ] = library:create( "Frame" , {
+						BorderColor3 = rgb(0, 0, 0);
+						Rotation = 180;
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(0, 0, 1, -4);
+						AnchorPoint = vec2(0, 1);
+						Size = dim2(0, 3, 0.25, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "6" ];
+						Position = dim2(0, 1, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "7" ] = library:create( "Frame" , {
+						AnchorPoint = vec2(1, 1);
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(1, -1, 1, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0.4, 0, 0, 3);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "7" ];
+						Position = dim2(0, 1, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, -2);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+					
+					objects[ "7" ] = library:create( "Frame" , {
+						BorderColor3 = rgb(0, 0, 0);
+						Rotation = 180;
+						Parent = objects[ "corners" ];
+						Name = "line";
+						Position = dim2(1, 0, 1, -4);
+						AnchorPoint = vec2(1, 1);
+						Size = dim2(0, 3, 0.25, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					library:create( "Frame" , {
+						Parent = objects[ "7" ];
+						Position = dim2(0, 1, 0, -2);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, 1);
+						BorderSizePixel = 0;
+						BackgroundColor3 = flags["Box_Color"].Color
+					});
+				-- 
+				
+				-- Healthbar
+					objects[ "healthbar_holder" ] = library:create( "Frame" , {
+						AnchorPoint = vec2(1, 0);
+						Parent = library.cache;
+						Name = "\0";
+						Position = dim2(0, -5, 0, 0);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(0, 4, 1, 0);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(0, 0, 0)
+					});
+					
+					objects[ "healthbar" ] = library:create( "Frame" , {
+						Parent = objects[ "healthbar_holder" ];
+						Name = "\0";
+						Position = dim2(0, 1, 0, 1);
+						BorderColor3 = rgb(0, 0, 0);
+						Size = dim2(1, -2, 1, -2);
+						BorderSizePixel = 0;
+						BackgroundColor3 = rgb(255, 255, 255)
+					});
+				-- 
+
+				-- Distance esp
+					objects[ "distance" ] = library:create( "TextLabel" , {
+						FontFace = library.font;
+						TextColor3 = flags["Distance_Color"].Color;
+						BorderColor3 = rgb(0, 0, 0);
+						Text = "127st";
+						Parent = library.cache;
+						TextStrokeTransparency = 0;
+						Name = "\0";
+						Size = dim2(1, 0, 0, 0);
+						BackgroundTransparency = 1;
+						Position = dim2(0, 0, 1, 5);
+						BorderSizePixel = 0;
+						AutomaticSize = Enum.AutomaticSize.Y;
+						TextSize = 12;
+					});                
+				-- 
+
+				-- Weapon esp
+					objects[ "weapon" ] = library:create( "TextLabel" , {
+						FontFace = library.font;
+						TextColor3 = flags["Weapon_Color"].Color;
+						BorderColor3 = rgb(0, 0, 0);
+						Text = "[ Weapon ]";
+						Parent = library.cache;
+						TextStrokeTransparency = 0;
+						Name = "\0";
+						Size = dim2(1, 0, 0, 0);
+						BackgroundTransparency = 1;
+						Position = dim2(0, 0, 1, 19);
+						BorderSizePixel = 0;
+						AutomaticSize = Enum.AutomaticSize.Y;
+						TextSize = 12;
+					});
+				--  
+			end 
+
+			cfg.change_health = function()
+				if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
+					return 
+				end
+
+				local humanoid = character.Humanoid
+				
+				local multiplier = humanoid.MaxHealth * math.abs(math.sin(tick() * 2)) / humanoid.MaxHealth
+				local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
+				
+				objects[ "healthbar" ].Size = UDim2.new(1, -2, multiplier, -2)
+				objects[ "healthbar" ].Position = UDim2.new(0, 1, 1 - multiplier, 1)
+				objects[ "healthbar" ].BackgroundColor3 = color
+			end -- wtf why diff func defining
+
+			function cfg.refresh_elements( )                                
+				objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
+
+				local temp = {
+					["Names"] = objects["name"]; 
+					["Name_Color"] = {objects["name"]};
+					["Healthbar"] = objects[ "healthbar_holder" ];
+					["Distance"] = objects[ "distance" ];
+					["Weapon"] = objects[ "weapon" ];
+					["Distance_Color"] = {objects[ "distance" ]};
+					["Weapon_Color"] = {objects[ "weapon" ]};
+				}
+
+				for flag,object in temp do 
+					if type(object) == "table" then 
+						object[1].TextColor3 = flags[flag].Color
+					else 
+						object.Parent = flags[flag] and objects[ "holder" ] or library.cache
+					end
+				end 
+				
+				local is_corner = flags[ "Box_Type" ] == "Corner"
+
+				if flags["Boxes"] then 
+					if is_corner then 
+						objects[ "corners" ].Parent = objects["holder"]
+						objects[ "box_handler" ].Parent = library.cache
+						objects[ "box_outline" ].Parent = library.cache
+					else 
+						objects[ "box_handler" ].Parent = objects[ "holder" ]
+						objects[ "box_outline" ].Parent = objects[ "holder" ]
+						objects[ "corners" ].Parent = library.cache
+					end 
+				else
+					objects[ "corners" ].Parent =  library.cache
+					objects[ "box_handler" ].Parent = library.cache
+					objects[ "box_outline" ].Parent = library.cache
+				end 
+
+				objects[ "box_color" ].Color = flags["Box_Color"].Color 
+
+				for _, corner in objects[ "corners" ]:GetChildren() do
+					corner.Frame.BackgroundColor3 = flags["Box_Color"].Color
+				end
+			end
+
+			task.spawn(function()
+				while true do 
+					task.wait()
+					cfg.change_health()
+				end 
+			end)
+
+			return setmetatable(cfg, library)
+		end
 
 		function library:refresh_notifications()  	
 			for _, notif in next, library.notifications do 
@@ -5100,7 +5563,367 @@
 			return setmetatable(cfg, library)   
 		end 
 
-	-- 
+		function library:playerlist(options) 
+			local cfg = {
+				callback = options.callback or function() end, 
+
+				labels = {
+					name,
+					display, 
+					uid, 
+				}
+			}
+
+			local selected_button; 
+
+			local patterns = {
+				["Priority"] = rgb(255, 255, 0),
+				["Enemy"] = rgb(255, 0, 0),
+				["Neutral"] = themes.preset.text,
+				["Friendly"] = rgb(0, 255, 255)
+			}
+
+			-- elements 
+				local playerlist_holder = library:create("TextLabel", {
+					Parent = self.holder,
+					Name = "",
+					FontFace = library.font,
+					TextColor3 = themes.preset.text,
+					BorderColor3 = rgb(0, 0, 0),
+					Text = "",
+					ZIndex = 2,
+					Size = dim2(1, -8, 0, 12),
+					BorderSizePixel = 0,
+					BackgroundTransparency = 1,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					TextYAlignment = Enum.TextYAlignment.Top,
+					TextSize = 12,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				
+				local UIPadding = library:create("UIPadding", {
+					Parent = playerlist_holder,
+					Name = "",
+					PaddingBottom = dim(0, -2),
+					PaddingLeft = dim(0, 1)
+				})
+				
+				local UIStroke = library:create("UIStroke", {
+					Parent = playerlist_holder,
+					Name = ""
+				})
+				
+				local bottom_components = library:create("Frame", {
+					Parent = playerlist_holder,
+					Name = "",
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, 26, 0, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				
+				library:create("UIListLayout", {
+					Parent = bottom_components,
+					Name = "",
+					Padding = dim(0, 10),
+					SortOrder = Enum.SortOrder.LayoutOrder
+				})
+				
+				local list = library:create("Frame", {
+					Parent = bottom_components,
+					Name = "",
+					Position = dim2(0, 0, 0, 2),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, -27, 1, 232),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline
+				}) library:apply_theme(list, "outline", "BackgroundColor3") 
+				
+				local inline = library:create("Frame", {
+					Parent = list,
+					Name = "",
+					Position = dim2(0, 1, 0, 1),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.inline
+				}) library:apply_theme(inline, "inline", "BackgroundColor3") 
+				
+				local background = library:create("Frame", {
+					Parent = inline,
+					Name = "",
+					Position = dim2(0, 1, 0, 1),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.accent
+				})
+				
+				local UIGradient = library:create("UIGradient", {
+					Parent = background,
+					Name = "",
+					Rotation = 90,
+					Color = rgbseq{
+						rgbkey(0, rgb(255, 255, 255)),
+						rgbkey(1, rgb(167, 167, 167))
+					}
+				}); library:apply_theme(UIGradient, "contrast", "Color") 
+				
+				local contrast = library:create("Frame", {
+					Parent = background,
+					Name = "",
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, 0, 1, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				
+				local UIGradient = library:create("UIGradient", {
+					Parent = contrast,
+					Name = "",
+					Rotation = 90,
+					Color = rgbseq{
+					rgbkey(0, rgb(41, 41, 55)),
+					rgbkey(1, rgb(35, 35, 47))
+				}
+				}); library:apply_theme(UIGradient, "contrast", "Color") 
+				
+				local ScrollingFrame = library:create("ScrollingFrame", {
+					Parent = contrast,
+					Name = "",
+					ScrollBarImageColor3 = themes.preset.accent,
+					Active = true,
+					MidImage = "rbxassetid://103468666327206",
+					TopImage = "rbxassetid://103468666327206",
+					BottomImage = "rbxassetid://103468666327206",
+					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					ScrollBarThickness = 2,
+					BackgroundTransparency = 1,
+					Size = dim2(1, 0, 1, 0),
+					BackgroundColor3 = rgb(255, 255, 255),
+					BorderColor3 = rgb(0, 0, 0),
+					BorderSizePixel = 0,
+					CanvasSize = dim2(0, 0, 0, 0)
+				}) library:apply_theme(ScrollingFrame, "accent", "ScrollBarImageColor3") 
+				
+				local UIPadding = library:create("UIPadding", {
+					Parent = ScrollingFrame,
+					Name = "",
+					PaddingTop = dim(0, 4),
+					PaddingBottom = dim(0, 4),
+					PaddingRight = dim(0, 4),
+					PaddingLeft = dim(0, 4)
+				})
+				
+				local UIListLayout = library:create("UIListLayout", {
+					Parent = ScrollingFrame,
+					Name = "",
+					Padding = dim(0, 4),
+					SortOrder = Enum.SortOrder.LayoutOrder
+				})
+			-- 
+
+			function cfg.create_player(player) 
+				library.playerlist_data[tostring(player)] = {}
+				local path = library.playerlist_data[tostring(player)]
+				
+				local TextButton = library:create("TextButton", {
+					Parent = ScrollingFrame,
+					Name = "",
+					FontFace = library.font,
+					TextColor3 = themes.preset.text,
+					BorderColor3 = rgb(0, 0, 0),
+					Text = "",
+					BackgroundTransparency = 1,
+					Size = dim2(1, 0, 0, 0),
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					TextSize = 12,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+
+				local player_name = library:create("TextLabel", {
+					Parent = TextButton,
+					FontFace = library.font,
+					TextColor3 = themes.preset.text,
+					BorderColor3 = rgb(0, 0, 0),
+					Text = tostring(player),
+					BorderSizePixel = 0,
+					BackgroundTransparency = 1,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					TextSize = 12,
+					LayoutOrder = -100, 
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				library:apply_theme(player_name, "text", "TextColor3") 
+				library:apply_theme(player_name, "accent", "TextColor3") 
+								
+				-- local TextLabel = library:create("TextLabel", {
+				--     Parent = TextButton,
+				--     Name = "",
+				--     FontFace = library.font,
+				--     TextColor3 = themes.preset.text,
+				--     BorderColor3 = rgb(0, 0, 0),
+				--     Text = "None",
+				--     BackgroundTransparency = 1,
+				--     TextXAlignment = Enum.TextXAlignment.Left,
+				--     BorderSizePixel = 0,
+				--     AutomaticSize = Enum.AutomaticSize.Y,
+				--     TextSize = 12,
+				--     BackgroundColor3 = rgb(255, 255, 255)
+				-- })
+								
+				-- local Frame = library:create("Frame", {
+				--     Parent = TextLabel,
+				--     Name = "",
+				--     Position = dim2(0, -10, 0, 0),
+				--     BorderColor3 = rgb(0, 0, 0),
+				--     Size = dim2(0, 1, 0, 12),
+				--     BorderSizePixel = 0,
+				--     BackgroundColor3 = themes.preset.outline
+				-- }) library:apply_theme(main_holder, "outline", "BackgroundColor3") 
+				
+				local priority_text = library:create("TextLabel", {
+					Parent = TextButton,
+					Name = "",
+					FontFace = library.font,
+					TextColor3 = tostring(player) ~= lp.Name and themes.preset.text or rgb(0, 0, 255),
+					BorderColor3 = rgb(0, 0, 0),
+					Text = tostring(player) ~= lp.Name and "Neutral" or "LocalPlayer",
+					BackgroundTransparency = 1,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					TextSize = 12,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+
+				local Frame = library:create("Frame", {
+					Parent = priority_text,
+					Name = "",
+					Position = dim2(0, -10, 0, 0),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(0, 1, 0, 12),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline
+				}) library:apply_theme(main_holder, "outline", "BackgroundColor3") 
+				
+				local UIListLayout = library:create("UIListLayout", {
+					Parent = TextButton,
+					Name = "",
+					FillDirection = Enum.FillDirection.Horizontal,
+					HorizontalFlex = Enum.UIFlexAlignment.Fill,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					VerticalFlex = Enum.UIFlexAlignment.Fill
+				})
+				
+				local UIPadding = library:create("UIPadding", {
+					Parent = TextButton,
+					Name = "",
+					PaddingRight = dim(0, 2),
+					PaddingLeft = dim(0, 2)
+				})
+
+				local line = library:create("Frame", {
+					Parent = ScrollingFrame,
+					Name = "",
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, 0, 0, 1),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline
+				}) library:apply_theme(main_holder, "outline", "BackgroundColor3") 
+
+				path.instance = TextButton 
+				path.line = line 
+				path.priority = "Neutral"
+				path.priority_text = priority_text
+				-- library.selected_player = players[tostring(player)]
+				
+				TextButton.MouseButton1Click:Connect(function()
+					if player_name == lp.Name then 
+						return 
+					end 
+
+					if selected_button then 
+						selected_button.TextColor3 = themes.preset.text 
+						selected_button = nil 
+					end     
+
+					selected_button = player_name 
+					player_name.TextColor3 = themes.preset.accent 
+
+					library.selected_player = player_name.Text
+					library.config_flags["PLAYERLIST_DROPDOWN"](path.priority_text.Text)
+
+					if cfg.labels.name then 
+						cfg.labels.name.set("User: " .. player_name.Text)
+						cfg.labels.display.set("DisplayName: " .. players[player_name.Text].DisplayName)
+						cfg.labels.uid.set("User Id: " .. players[player_name.Text].UserId)
+					end
+				end)
+
+				return path 
+			end 
+
+			function cfg.search(text)
+				for _, player in next, players:GetPlayers() do 
+					local name = tostring(player)
+					local path = library.playerlist_data[name]
+
+					if path then 
+						local sanity = string.lower(name):match(string.lower(text)) and true or false
+						path.instance.Visible = sanity
+						path.line.Visible = sanity
+					end 
+				end 
+			end 
+
+			function cfg.remove_player(player) 
+				local path = library.playerlist_data[tostring(player)]
+				path.instance:Destroy() 
+				path.line:Destroy() 
+				path = nil 
+			end 
+
+			function library.prioritize(text) 
+				if not library.selected_player then 
+					return 
+				end 
+
+				local path = library.playerlist_data[library.selected_player]
+				path.priority_text.Text = text
+				path.priority_text.TextColor3 = patterns[text]
+				path.priority = text
+			end 
+
+			function library.get_priority(player) 
+				local path = library.playerlist_data[tostring(player)]
+
+				if path then 
+					return path.priority
+				end 
+			end 
+
+			players.PlayerAdded:Connect(cfg.create_player)
+			players.PlayerRemoving:Connect(cfg.remove_player)
+			
+			for _, player in players:GetPlayers() do 
+				local player_object = cfg.create_player(player.Name)
+				insert(library.playerlist_data, player_object)
+			end 
+
+			self:textbox({name = "Search", callback = function(txt)
+				cfg.search(txt)
+			end})
+			cfg.labels.name = self:label({name = "Name: ??"})
+			cfg.labels.display = self:label({name = "Display Name: ??"})
+			cfg.labels.uid = self:label({name = "User Id: ??"})
+
+			return setmetatable(cfg, library)
+		end 
 	-- 
 -- 
 
