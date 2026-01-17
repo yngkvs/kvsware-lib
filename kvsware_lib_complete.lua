@@ -343,6 +343,15 @@
 			end)
 		end
 
+		function library:CreateWindow(options)
+			local title = (options and (options.Title or options.title)) or os.date('Atlanta |  - %b %d %Y')
+			local win = self:window({name = title})
+			if options and options.AutoShow == false then
+				win.set_menu_visibility(false)
+			end
+			return win
+		end 
+
 		function library:draggify(frame)
 			local dragging = false 
 			local start_size = frame.Position
@@ -681,34 +690,7 @@
 					library:draggify(items.main_holder)
 					library:make_resizable(items.main_holder)
 
-					local Close = library:create( "TextButton" , {
-						Parent = items.main_holder;
-						FontFace = library.font;
-						Name = "\0";
-						AnchorPoint = vec2(1, 0);
-						Active = false;
-						BorderColor3 = rgb(0, 0, 0);
-						Text = "X";
-						Size = dim2(0, 0, 0, 0);
-						Selectable = false;
-						Position = dim2(1, -7, 0, 5);
-						BorderSizePixel = 0;
-						BackgroundTransparency = 1;
-						TextXAlignment = Enum.TextXAlignment.Right;
-						AutomaticSize = Enum.AutomaticSize.XY;
-						TextColor3 = themes.preset.text;
-						TextSize = 12;
-						ZIndex = 100;
-						BackgroundColor3 = rgb(255, 255, 255)
-					});
-
-					library:create( "UIStroke" , {
-						Parent = Close
-					});         
 					
-					Close.MouseButton1Click:Connect(function()
-						items.sgui.Enabled = false;
-					end)
 
 					--library:apply_theme(main_holder, "outline", "BackgroundColor3") 
 					
