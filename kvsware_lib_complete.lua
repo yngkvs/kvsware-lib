@@ -69,7 +69,7 @@
 
 -- library init
 	local library = {
-		directory = "Atlanta",
+		directory = "Euphoria",
 		folders = {
 			"/fonts",
 			"/configs",
@@ -1344,7 +1344,7 @@
 
 			-- main window
 				local main_window = library:panel({
-					name = properties and properties.name or "Atlanta | ", 
+					name = properties and properties.name or "EuphoriaHook | ", 
 					size = dim2(0, 604, 0, 628),
 					position = dim2(0, (camera.ViewportSize.X / 2) - 302 - 96, 0, (camera.ViewportSize.Y / 2) - 421 - 12),
 					image = "rbxassetid://98823308062942",
@@ -1441,10 +1441,10 @@
 			-- 
 
 			
-				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})  
+				local watermark = library:watermark({default = os.date('EuphoriaHook |  - %b %d %Y - %H:%M:%S')})  
 				task.spawn(function()
 					while task.wait(1) do 
-						watermark.change_text(os.date('Atlanta - Beta - %b %d %Y - %H:%M:%S'))
+						watermark.change_text(os.date('EuphoriaHook - Beta - %b %d %Y - %H:%M:%S'))
 					end 
 				end) 
 
@@ -5740,3 +5740,4 @@
 -- 
 
 return library, themes; 
+
