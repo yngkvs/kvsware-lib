@@ -849,81 +849,10 @@
 					}) library:apply_theme(items.glow, "glow", "ImageColor3") 
 				-- 
 				
-				-- Button
-					items.button = library:create("TextButton", {
-						Parent = library.dock_holder,
-						Name = "",
-						TextColor3 = rgb(0, 0, 0),
-						BorderColor3 = rgb(0, 0, 0),
-						Text = "",
-						Size = dim2(0, 25, 0, 25),
-						BorderSizePixel = 0,
-						TextSize = 14,
-						BackgroundColor3 = themes.preset.inline
-					})
-					
-					local button_inline = library:create("Frame", {
-						Parent = items.button,
-						Name = "",
-						Position = dim2(0, 1, 0, 1),
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, -2, 1, -2),
-						BorderSizePixel = 0,
-						BackgroundColor3 = themes.preset.outline
-					}) library:apply_theme(button_inline, "outline", "BackgroundColor3") 
-					
-					local button_inline = library:create("Frame", {
-						Parent = button_inline,
-						Name = "",
-						Position = dim2(0, 1, 0, 1),
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, -2, 1, -2),
-						BorderSizePixel = 0,
-						BackgroundColor3 = rgb(255, 255, 255)
-					}) library:apply_theme(button_inline, "inline", "BackgroundColor3")
-					
-					local UIGradient = library:create("UIGradient", {
-						Parent = button_inline,
-						Name = "",
-						Rotation = 90,
-						Color = rgbseq{
-							rgbkey(0, rgb(35, 35, 47)),
-							rgbkey(1, rgb(41, 41, 55))
-						}
-					}) library:apply_theme(UIGradient, "contrast", "Color") 
-					
-					items.Icon = library:create("ImageLabel", {
-						Parent = button_inline,
-						Name = "",
-						ImageColor3 = themes.preset.accent,
-						Image = cfg.image,
-						BackgroundTransparency = 1,
-						BorderColor3 = rgb(0, 0, 0),
-						Size = dim2(1, 0, 1, 0),
-						BorderSizePixel = 0,
-						BackgroundColor3 = rgb(255, 255, 255)
-					}) library:apply_theme(items.Icon, "accent", "ImageColor3") library:apply_theme(items.Icon, "inline", "ImageColor3") 
-					
-					local UIPadding = library:create("UIPadding", {
-						Parent = button_inline,
-						Name = "",
-						PaddingTop = dim(0, 4),
-						PaddingBottom = dim(0, 4),
-						PaddingRight = dim(0, 4),
-						PaddingLeft = dim(0, 4)
-					})
-				-- 
-
-				library:tool_tip({name = cfg.name, path = items.button})
+				
 			end 
 
-			items.sgui:GetPropertyChangedSignal("Enabled"):Connect(function()
-				items.Icon.ImageColor3 = items.sgui.Enabled and themes.preset.accent or themes.preset.inline
-			end)
-
-			items.button.MouseButton1Click:Connect(function()
-				items.sgui.Enabled = not items.sgui.Enabled
-			end)
+			
 			
 			return setmetatable(cfg, library)
 		end 
@@ -1227,7 +1156,6 @@
 		function library:window(properties)
 			local window = {opened = true}            
 			local opened = {}
-			local dock_outline;
 			local blur = library:create( "BlurEffect" , {
 				Parent = lighting;
 				Enabled = true;
@@ -1259,12 +1187,9 @@
 
 				library:tween(blur, {Size = bool and (flags["Blur Size"] or 15) or 0})
 
-				dock_outline.Visible = bool;
-
 				sgui.Enabled = true
 				notif_holder.Enabled = true
 				tooltip_sgui.Enabled = true
-				library.cache.Enabled = false
 
 				for _,tooltip in tooltip_sgui:GetChildren() do 
 					tooltip.Visible = false;
@@ -1277,100 +1202,7 @@
 				end
 			end 
 
-			-- dock init
-				dock_outline = library:create("Frame", {
-					Parent = sgui,
-					Name = "",
-					Visible = true,
-					BorderColor3 = rgb(0, 0, 0),
-					AnchorPoint = vec2(0.5, 0),
-					Position = dim2(0.5, 0, 0, 20),
-					Size = dim2(0, 157, 0, 39),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.outline
-				}); 
-
-				library:apply_theme(dock_outline, "outline", "BackgroundColor3"); 
-				dock_outline.Position = dim2(0, dock_outline.AbsolutePosition.X, 0, dock_outline.AbsolutePosition.Y); 
-				dock_outline.AnchorPoint = vec2(0, 0); 
-				library:draggify(dock_outline);
-
-				local dock_inline = library:create("Frame", {
-					Parent = dock_outline,
-					Name = "",
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline
-				}) library:apply_theme(dock_inline, "inline", "BackgroundColor3") 
-				
-				local dock_holder = library:create("Frame", {
-					Parent = dock_inline,
-					Name = "",
-					Size = dim2(1, -2, 1, -2),
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = themes.preset.outline,
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				}) library:apply_theme(dock_holder, "outline", "BackgroundColor3") 
-				
-				local accent = library:create("Frame", {
-					Parent = dock_holder,
-					Name = "",
-					Size = dim2(1, 0, 0, 2),
-					BorderColor3 = rgb(0, 0, 0),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent
-				}) library:apply_theme(accent, "accent", "BackgroundColor3") 
-				
-				local UIGradient = library:create("UIGradient", {
-					Parent = accent,
-					Name = "",
-					Rotation = 90,
-					Color = rgbseq{
-					rgbkey(0, rgb(255, 255, 255)),
-					rgbkey(1, rgb(167, 167, 167))
-				}
-				})
-				
-				local button_holder = library:create("Frame", {
-					Parent = dock_holder,
-					Name = "",
-					BackgroundTransparency = 1,
-					Size = dim2(1, 0, 1, 0),
-					BorderColor3 = rgb(0, 0, 0),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				}) library.dock_holder = button_holder;
-				
-				local UIListLayout = library:create("UIListLayout", {
-					Parent = button_holder,
-					Name = "",
-					Padding = dim(0, 5),
-					FillDirection = Enum.FillDirection.Horizontal,
-					SortOrder = Enum.SortOrder.LayoutOrder
-				})
-				
-				local UIPadding = library:create("UIPadding", {
-					Parent = button_holder,
-					Name = "",
-					PaddingTop = dim(0, 6),
-					PaddingBottom = dim(0, 4),
-					PaddingRight = dim(0, 4),
-					PaddingLeft = dim(0, 4)
-				})
-						
-				local UIGradient = library:create("UIGradient", {
-					Parent = dock_holder,
-					Name = "",
-					Rotation = 90,
-					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47))
-					}
-				}) library:apply_theme(UIGradient, "contrast", "Color") 
-			-- 
+			
 
 			-- keybind list
 				local outline = library:create("Frame", {
@@ -1624,26 +1456,17 @@
 				library:make_resizable(items.main_holder) 
 			-- 
 
-			-- theming 
-				local style = library:panel({
-					name = "Style", 
-					anchor_point = vec2(0, 0),
-					size = dim2(0, 394, 0, 464),
-					position = dim2(0, main_window.items.main_holder.AbsolutePosition.X + main_window.items.main_holder.AbsoluteSize.X + 2, 0, main_window.items.main_holder.AbsolutePosition.Y),
-					image = "rbxassetid://115194686863276",
-				})
-
+			
 				local watermark = library:watermark({default = os.date('Atlanta |  - %b %d %Y - %H:%M:%S')})  
-
 				task.spawn(function()
 					while task.wait(1) do 
 						watermark.change_text(os.date('Atlanta - Beta - %b %d %Y - %H:%M:%S'))
 					end 
 				end) 
 
-				local items = style.items
+				local settings = setmetatable(window, library):tab({name = "Settings", layout_order = 999})
 
-				local column = setmetatable(items, library):column() 
+				local column = setmetatable(settings, library):column() 
 				local section = column:section({name = "Theme"})
 				section:label({name = "Accent"})
 				:colorpicker({name = "Accent", color = themes.preset.accent, flag = "accent", callback = function(color, alpha)
@@ -1657,7 +1480,6 @@
 							rgbkey(1, flags["high_contrast"].Color)
 						})
 					end 
-
 					library:update_theme("low_contrast", flags["low_contrast"].Color)
 				end})
 				:colorpicker({name = "High", color = themes.preset.high_contrast, flag = "high_contrast", callback = function(color)
@@ -1665,7 +1487,6 @@
 						rgbkey(0, flags["low_contrast"].Color),
 						rgbkey(1, flags["high_contrast"].Color)
 					})
-
 					library:update_theme("high_contrast", flags["high_contrast"].Color)
 				end})
 				section:label({name = "Inline"})
@@ -1692,101 +1513,86 @@
 						blur.Size = int
 					end
 				end})
-				local section = column:section({name = "Other"})
-				section:label({name = "UI Bind"})
+
+				local other = column:section({name = "Other"})
+				other:label({name = "UI Bind"})
 				:keybind({callback = window.set_menu_visibility, key = Enum.KeyCode.Insert})
-				section:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
+				other:toggle({name = "Keybind List", flag = "keybind_list", callback = function(bool)
 					library.keybind_list_frame.Visible = bool
 				end})
-				section:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
+				other:toggle({name = "Watermark", flag = "watermark", callback = function(bool)
 					watermark.set_visible(bool)
 				end})
-				section:button_holder({})
-				section:button({name = "Copy JobId", callback = function()
+				other:button_holder({})
+				other:button({name = "Copy JobId", callback = function()
 					setclipboard(game.JobId)
 				end})
-				section:button_holder({})
-				section:button({name = "Copy GameID", callback = function()
+				other:button_holder({})
+				other:button({name = "Copy GameID", callback = function()
 					setclipboard(game.GameId)
 				end})
-				section:button_holder({})
-				section:button({name = "Copy Join Script", callback = function()
+				other:button_holder({})
+				other:button({name = "Copy Join Script", callback = function()
 					setclipboard('game:GetService("TeleportService"):TeleportToPlaceInstance(' .. game.PlaceId .. ', "' .. game.JobId .. '", game.Players.LocalPlayer)')
 				end})
-				section:button_holder({})
-				section:button({name = "Rejoin", callback = function()
+				other:button_holder({})
+				other:button({name = "Rejoin", callback = function()
 					game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, lp)
 				end})
-				section:button_holder({})
-				section:button({name = "Join New Server", callback = function()
+				other:button_holder({})
+				other:button({name = "Join New Server", callback = function()
 					local apiRequest = game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
 					local data = apiRequest.data[random(1, #apiRequest.data)]
-						
 					if data.playing <= flags["max_players"] then 
 						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, data.id)
 					end 
 				end})
-				section:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
-			-- 
+				other:slider({name = "Max Players", flag = "max_players", min = 0, max = 40, default = 15, interval = 1})
 
-			-- cfg holder
-				local holder = library:panel({
-					name = "Configurations", 
-					size = dim2(0, 324, 0, 410),
-					position = dim2(0, items.main_holder.AbsolutePosition.X + items.main_holder.AbsoluteSize.X + 2, 0, items.main_holder.AbsolutePosition.Y),
-					image = "rbxassetid://105199726008012",
-				}) 
-
-				local items = holder.items
-
+				local column2 = setmetatable(settings, library):column() 
+				local cfgSection = column2:section({name = "Configurations"})
 				getgenv().load_config = function(name)
 					library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
 				end 
-
-				local column = setmetatable(items, library):column() 
-				local section = column:section({name = "Options"})
-					config_holder = section:list({flag = "config_name_list"})
-					section:textbox({flag = "config_name_text_box"})
-					section:button_holder({})
-					section:button({name = "Create", callback = function()
-						writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
-						library:config_list_update()
-					end})
-					section:button({name = "Delete", callback = function()
-						delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
-						library:config_list_update()
-					end})
-					section:button_holder({})
-					section:button({name = "Load", callback = function()
-						library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
-						library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
-					end})
-					section:button({name = "Save", callback = function()
-						writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
-						library:config_list_update()
-						library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
-					end})
-					section:button_holder({})
-					section:button({name = "Refresh Configs", callback = function()
-						library:config_list_update()
-					end})
-					section:button_holder({})
-					section:button({name = "Unload Config", callback = function()
-						library:load_config(library.old_config)
-					end})
-					section:button({name = "Unload Menu", callback = function()
-						library:load_config(library.old_config)
-
-						for _, gui in library.guis do 
-							gui:Destroy() 
-						end 
-
-						for _, connection in library.connections do 
-							connection:Disconnect() 
-						end
-
-						blur:Destroy()
-					end})
+				config_holder = cfgSection:list({flag = "config_name_list"})
+				cfgSection:textbox({flag = "config_name_text_box"})
+				cfgSection:button_holder({})
+				cfgSection:button({name = "Create", callback = function()
+					writefile(library.directory .. "/configs/" .. flags["config_name_text_box"] .. ".cfg", library:get_config())
+					library:config_list_update()
+				end})
+				cfgSection:button({name = "Delete", callback = function()
+					delfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg")
+					library:config_list_update()
+				end})
+				cfgSection:button_holder({})
+				cfgSection:button({name = "Load", callback = function()
+					library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg"))
+					library:notification({text = "Loaded Config: " .. flags["config_name_list"], time = 3})
+				end})
+				cfgSection:button({name = "Save", callback = function()
+					writefile(library.directory .. "/configs/" .. flags["config_name_list"] .. ".cfg", library:get_config())
+					library:config_list_update()
+					library:notification({text = "Saved Config: " .. flags["config_name_list"], time = 3})
+				end})
+				cfgSection:button_holder({})
+				cfgSection:button({name = "Refresh Configs", callback = function()
+					library:config_list_update()
+				end})
+				cfgSection:button_holder({})
+				cfgSection:button({name = "Unload Config", callback = function()
+					library:load_config(library.old_config)
+				end})
+				cfgSection:button({name = "Unload Menu", callback = function()
+					library:load_config(library.old_config)
+					for _, gui in library.guis do 
+						gui:Destroy() 
+					end 
+					for _, connection in library.connections do 
+						connection:Disconnect() 
+					end
+					blur:Destroy()
+				end})
 			-- 
 					
 			-- (ESP Preview removed)
@@ -2484,6 +2290,7 @@
 					BackgroundColor3 = themes.preset.outline,
 					AutoButtonColor = false
 				}) library:apply_theme(tab_holder, "outline", "BackgroundColor3") 
+				tab_holder.LayoutOrder = (options and options.layout_order) or 0
 
 				local inline = library:create("Frame", {
 					Parent = tab_holder,
