@@ -271,6 +271,10 @@
 			return hover_instance;
 		end 
 
+		function library:AddTab(name)
+			return self:tab({name = name})
+		end
+
 		function library:hovering(Object)
 			if type(Object) == "table" then 
 				local Pass = false;
@@ -742,6 +746,15 @@
 						TextSize = 12,
 						BackgroundColor3 = rgb(255, 255, 255)
 					}) library:apply_theme(items.text, "accent", "TextColor3")
+					
+					if options.center then
+						items.text.AutomaticSize = Enum.AutomaticSize.Y
+						items.text.Size = dim2(1, 0, 0, 16)
+						items.text.Position = dim2(0, 0, 0, 4)
+						items.text.TextXAlignment = Enum.TextXAlignment.Center
+					else
+						items.text.TextXAlignment = Enum.TextXAlignment.Left
+					end
 					
 					items.UIStroke = library:create("UIStroke", {
 						Parent = items.text,
