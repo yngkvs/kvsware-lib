@@ -1,50 +1,269 @@
-local UILib = loadstring(readfile("uilib.txt"))()
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 
-local Window = UILib:CreateWindow({
-    Title = "Example CS:GO UI",
+local UILib = {}
+
+UILib.Theme = {
     OutlineColor = Color3.fromRGB(255, 170, 0),
+    BackgroundColor = Color3.fromRGB(15, 15, 18),
+    InnerBackgroundColor = Color3.fromRGB(10, 10, 12),
+    AccentColor = Color3.fromRGB(255, 210, 60),
+    TextColor = Color3.fromRGB(230, 230, 230),
+    TabInactiveColor = Color3.fromRGB(20, 20, 24),
+    TabActiveColor = Color3.fromRGB(35, 35, 42)
+}
+
+UILib.Defaults = {
+    Title = "Euphoria",
+    OutlineColor = nil,
     Size = Vector2.new(520, 420),
     Position = Vector2.new(200, 150),
-    GuiName = "ExampleUILib"
-})
+    GuiName = "EuphoriaUILib"
+}
 
-Window:SetTitle("Example Cheat Name")
-Window:SetOutlineColor(Color3.fromRGB(0, 200, 255))
+local function getParent()
+    local ok, result = pcall(function()
+        return CoreGui
+    end)
+    if ok and result then
+        return result
+    end
+    local player = Players.LocalPlayer
+    if player then
+        local playerGui = player:FindFirstChildOfClass("PlayerGui")
+        if playerGui then
+            return playerGui
+        end
+    end
+    return nil
+end
 
-local RageTab = Window:AddTab("Rage")
-local LegitTab = Window:AddTab("Legit")
-local VisualsTab = Window:AddTab("Visuals")
+local function applyStroke(target, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color
+    stroke.Thickness = thickness or 1
+    stroke.LineJoinMode = Enum.LineJoinMode.Round
+    stroke.Parent = target
+    return stroke
+end
 
-local RageLabel = Instance.new("TextLabel")
-RageLabel.Size = UDim2.new(0, 200, 0, 20)
-RageLabel.Position = UDim2.new(0, 4, 0, 4)
-RageLabel.BackgroundTransparency = 1
-RageLabel.Font = Enum.Font.Code
-RageLabel.TextSize = 14
-RageLabel.TextColor3 = UILib.Theme.TextColor
-RageLabel.TextXAlignment = Enum.TextXAlignment.Left
-RageLabel.Text = "Rage settings go here"
-RageLabel.Parent = RageTab.Page
+local WindowMethods = {}
+WindowMethods.__index = WindowMethods
 
-local LegitLabel = Instance.new("TextLabel")
-LegitLabel.Size = UDim2.new(0, 200, 0, 20)
-LegitLabel.Position = UDim2.new(0, 4, 0, 4)
-LegitLabel.BackgroundTransparency = 1
-LegitLabel.Font = Enum.Font.Code
-LegitLabel.TextSize = 14
-LegitLabel.TextColor3 = UILib.Theme.TextColor
-LegitLabel.TextXAlignment = Enum.TextXAlignment.Left
-LegitLabel.Text = "Legit settings go here"
-LegitLabel.Parent = LegitTab.Page
+function UILib:CreateWindow(opts)
+    opts = opts or {}
+    local parent = getParent()
+    if not parent then
+        error("UILib: no suitable UI parent found")
+    end
 
-local VisualsLabel = Instance.new("TextLabel")
-VisualsLabel.Size = UDim2.new(0, 200, 0, 20)
-VisualsLabel.Position = UDim2.new(0, 4, 0, 4)
-VisualsLabel.BackgroundTransparency = 1
-VisualsLabel.Font = Enum.Font.Code
-VisualsLabel.TextSize = 14
-VisualsLabel.TextColor3 = UILib.Theme.TextColor
-VisualsLabel.TextXAlignment = Enum.TextXAlignment.Left
-VisualsLabel.Text = "Visuals settings go here"
-VisualsLabel.Parent = VisualsTab.Page
+    local theme = self.Theme
+
+    local outlineColor = opts.OutlineColor or self.Defaults.OutlineColor or theme.OutlineColor
+    local size = opts.Size or self.Defaults.Size
+    local position = opts.Position or self.Defaults.Position
+    local title = opts.Title or self.Defaults.Title
+    local guiName = opts.GuiName or self.Defaults.GuiName
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = guiName
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Parent = parent
+
+    local main = Instance.new("Frame")
+    main.Name = "Main"
+    main.Size = UDim2.fromOffset(size.X, size.Y)
+    main.Position = UDim2.fromOffset(position.X, position.Y)
+    main.BackgroundColor3 = theme.BackgroundColor
+    main.BorderSizePixel = 0
+    main.Parent = screenGui
+
+    local outerStroke = applyStroke(main, outlineColor, 1)
+
+    local innerLayer = Instance.new("Frame")
+    innerLayer.Name = "InnerLayer"
+    innerLayer.Size = UDim2.new(1, -4, 1, -4)
+    innerLayer.Position = UDim2.new(0, 2, 0, 2)
+    innerLayer.BackgroundColor3 = theme.InnerBackgroundColor
+    innerLayer.BorderSizePixel = 0
+    innerLayer.Parent = main
+
+    local innerStroke = applyStroke(innerLayer, outlineColor, 1)
+
+    local coreLayer = Instance.new("Frame")
+    coreLayer.Name = "CoreLayer"
+    coreLayer.Size = UDim2.new(1, -4, 1, -4)
+    coreLayer.Position = UDim2.new(0, 2, 0, 2)
+    coreLayer.BackgroundColor3 = theme.BackgroundColor
+    coreLayer.BorderSizePixel = 0
+    coreLayer.Parent = innerLayer
+
+    local coreStroke = applyStroke(coreLayer, outlineColor, 1)
+
+    local titleBar = Instance.new("Frame")
+    titleBar.Name = "TitleBar"
+    titleBar.BackgroundColor3 = theme.InnerBackgroundColor
+    titleBar.BorderSizePixel = 0
+    titleBar.Size = UDim2.new(1, 0, 0, 26)
+    titleBar.Parent = coreLayer
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Size = UDim2.new(1, -12, 1, 0)
+    titleLabel.Position = UDim2.new(0, 6, 0, 0)
+    titleLabel.Font = Enum.Font.Code
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.TextYAlignment = Enum.TextYAlignment.Center
+    titleLabel.TextSize = 14
+    titleLabel.TextColor3 = theme.TextColor
+    titleLabel.Text = title
+    titleLabel.Parent = titleBar
+
+    local tabBar = Instance.new("Frame")
+    tabBar.Name = "TabBar"
+    tabBar.BackgroundColor3 = theme.BackgroundColor
+    tabBar.BorderSizePixel = 0
+    tabBar.Size = UDim2.new(1, 0, 0, 24)
+    tabBar.Position = UDim2.new(0, 0, 0, titleBar.Size.Y.Offset)
+    tabBar.Parent = coreLayer
+
+    local tabLayout = Instance.new("UIListLayout")
+    tabLayout.Name = "Layout"
+    tabLayout.FillDirection = Enum.FillDirection.Horizontal
+    tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tabLayout.Padding = UDim.new(0, 4)
+    tabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    tabLayout.Parent = tabBar
+
+    local contentContainer = Instance.new("Frame")
+    contentContainer.Name = "Content"
+    contentContainer.BackgroundColor3 = theme.InnerBackgroundColor
+    contentContainer.BorderSizePixel = 0
+    contentContainer.Size = UDim2.new(1, -8, 1, -titleBar.Size.Y.Offset - tabBar.Size.Y.Offset - 8)
+    contentContainer.Position = UDim2.new(0, 4, 0, titleBar.Size.Y.Offset + tabBar.Size.Y.Offset + 4)
+    contentContainer.Parent = coreLayer
+
+    local tabPadding = Instance.new("UIPadding")
+    tabPadding.PaddingLeft = UDim.new(0, 6)
+    tabPadding.Parent = tabBar
+
+    local contentPadding = Instance.new("UIPadding")
+    contentPadding.PaddingTop = UDim.new(0, 4)
+    contentPadding.PaddingLeft = UDim.new(0, 4)
+    contentPadding.PaddingRight = UDim.new(0, 4)
+    contentPadding.PaddingBottom = UDim.new(0, 4)
+    contentPadding.Parent = contentContainer
+
+    local selfWindow = setmetatable({}, WindowMethods)
+
+    selfWindow._screenGui = screenGui
+    selfWindow._main = main
+    selfWindow._innerLayer = innerLayer
+    selfWindow._coreLayer = coreLayer
+    selfWindow._titleBar = titleBar
+    selfWindow._titleLabel = titleLabel
+    selfWindow._tabBar = tabBar
+    selfWindow._contentContainer = contentContainer
+    selfWindow._outerStroke = outerStroke
+    selfWindow._innerStroke = innerStroke
+    selfWindow._coreStroke = coreStroke
+    selfWindow._outlineColor = outlineColor
+    selfWindow._tabs = {}
+    selfWindow._currentTab = nil
+    selfWindow._theme = theme
+
+    return selfWindow
+end
+
+function WindowMethods:SetTitle(newTitle)
+    self._titleLabel.Text = tostring(newTitle)
+end
+
+function WindowMethods:SetOutlineColor(color)
+    self._outlineColor = color
+    self._outerStroke.Color = color
+    self._innerStroke.Color = color
+    self._coreStroke.Color = color
+end
+
+function WindowMethods:AddTab(name)
+    local theme = self._theme
+
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = name .. "Tab"
+    tabButton.BackgroundColor3 = theme.TabInactiveColor
+    tabButton.BorderSizePixel = 0
+    tabButton.Size = UDim2.new(0, 80, 1, -6)
+    tabButton.Position = UDim2.new(0, 0, 0, 3)
+    tabButton.AutoButtonColor = false
+    tabButton.Font = Enum.Font.Code
+    tabButton.TextSize = 14
+    tabButton.TextColor3 = theme.TextColor
+    tabButton.TextXAlignment = Enum.TextXAlignment.Center
+    tabButton.TextYAlignment = Enum.TextYAlignment.Center
+    tabButton.Text = name
+    tabButton.Parent = self._tabBar
+
+    local tabStroke = applyStroke(tabButton, self._outlineColor, 1)
+
+    local page = Instance.new("Frame")
+    page.Name = name .. "Page"
+    page.BackgroundColor3 = theme.InnerBackgroundColor
+    page.BorderSizePixel = 0
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.Visible = false
+    page.Parent = self._contentContainer
+
+    local tab = {
+        Name = name,
+        Button = tabButton,
+        Page = page,
+        Stroke = tabStroke
+    }
+
+    table.insert(self._tabs, tab)
+
+    tabButton.MouseButton1Click:Connect(function()
+        self:ShowTab(tab)
+    end)
+
+    if not self._currentTab then
+        self:ShowTab(tab)
+    end
+
+    return tab
+end
+
+function WindowMethods:ShowTab(tab)
+    local theme = self._theme
+
+    if self._currentTab == tab then
+        return
+    end
+
+    if self._currentTab then
+        self._currentTab.Page.Visible = false
+        self._currentTab.Button.BackgroundColor3 = theme.TabInactiveColor
+    end
+
+    self._currentTab = tab
+    tab.Page.Visible = true
+    tab.Button.BackgroundColor3 = theme.TabActiveColor
+end
+
+function WindowMethods:GetCurrentTab()
+    return self._currentTab
+end
+
+function WindowMethods:Destroy()
+    if self._screenGui then
+        self._screenGui:Destroy()
+    end
+    self._tabs = {}
+    self._currentTab = nil
+end
+
+return UILib
 
